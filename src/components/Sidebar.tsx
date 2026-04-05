@@ -32,22 +32,56 @@ export default async function Sidebar() {
   let wallets: WalletRecord[] = [];
 
   if (user) {
-    const { data, error } = await supabase
-      .from('wallet_permissions')
-      .select('wallets:wallet_id (id,name,description)')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: true });
+    try {
+      // First get the wallet permissions for this user
+      const { data: permissions, error: permError } = await supabase
+        .from('wallet_permissions')
+        .select('wallet_id')
+        .eq('user_id', user.id);
 
-    if (!error && data) {
-      wallets = data
-        .flatMap((row) => {
-          const related = row.wallets as WalletRecord | WalletRecord[] | null;
-          if (!related) return [];
-          return Array.isArray(related) ? related : [related];
-        })
-        .filter((wallet): wallet is WalletRecord => Boolean(wallet));
-    } else if (error) {
-      console.error('Sidebar wallets error:', error);
+      if (permError) {
+        console.error('Sidebar permissions error:', JSON.stringify(permError, null, 2));
+        console.error('Permission error details:', {
+          message: permError.message,
+          details: permError.details,
+          hint: permError.hint,
+          code: permError.code
+        });
+        
+        // Fallback: Try to get wallets directly by created_by
+        console.log('Trying fallback approach...');
+        const { data: fallbackWallets, error: fallbackError } = await supabase
+          .from('wallets')
+          .select('id, name, description')
+          .eq('created_by', user.id);
+          
+        if (fallbackError) {
+          console.error('Fallback query also failed:', JSON.stringify(fallbackError, null, 2));
+        } else if (fallbackWallets) {
+          wallets = fallbackWallets;
+        }
+      } else if (permissions && permissions.length > 0) {
+        // Then get the wallet details for the permitted wallets
+        const walletIds = permissions.map(p => p.wallet_id);
+        const { data: walletData, error: walletError } = await supabase
+          .from('wallets')
+          .select('id, name, description')
+          .in('id', walletIds);
+
+        if (walletError) {
+          console.error('Sidebar wallets error:', JSON.stringify(walletError, null, 2));
+          console.error('Wallet error details:', {
+            message: walletError.message,
+            details: walletError.details,
+            hint: walletError.hint,
+            code: walletError.code
+          });
+        } else if (walletData) {
+          wallets = walletData;
+        }
+      }
+    } catch (err) {
+      console.error('Unexpected sidebar error:', err);
     }
   }
 
@@ -73,11 +107,11 @@ export default async function Sidebar() {
       </nav>
 
       <div className="flex-1 px-4 mt-6 overflow-y-auto">
-        <p className="text-xs font-semibold text-slate-400 uppercase mb-3">Mis cajas</p>
+        <p className="text-xs font-semibold text-slate-400 uppercase mb-3">Mis wallets</p>
         <div className="space-y-2">
           {wallets.length === 0 && (
             <p className="text-sm text-slate-400">
-              {user ? 'Aún no tienes cajas creadas.' : 'Inicia sesión para ver tus cajas.'}
+              {user ? 'Aún no tienes wallets creadas.' : 'Inicia sesión para ver tus wallets.'}
             </p>
           )}
 

@@ -48,7 +48,7 @@ export async function createWallet(name: string, description: string): Promise<C
       .single();
 
     if (walletError || !wallet) {
-      return { success: false, error: walletError?.message || 'No se pudo crear la caja.' };
+      return { success: false, error: walletError?.message || 'No se pudo crear la wallet.' };
     }
 
     const { error: permissionError } = await supabase

@@ -27,10 +27,10 @@ export default function CreateWalletModal() {
     startTransition(async () => {
       const result = await createWallet(name.trim(), description.trim());
       if (!result.success) {
-        setError(result.error ?? 'No se pudo crear la caja.');
+        setError(result.error ?? 'No se pudo crear la wallet.');
         return;
       }
-      setSuccessMessage('Caja creada exitosamente.');
+      setSuccessMessage('Wallet creada exitosamente.');
       router.refresh();
       setTimeout(() => {
         setIsOpen(false);
@@ -46,7 +46,7 @@ export default function CreateWalletModal() {
         className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold shadow hover:bg-blue-500 transition"
       >
         <Plus size={18} />
-        Crear nueva Caja
+        Crear nueva Wallet
       </button>
 
       {isOpen && (
@@ -68,8 +68,8 @@ export default function CreateWalletModal() {
                 <WalletIcon size={28} />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-slate-800">Nueva Caja</h3>
-                <p className="text-sm text-slate-500">Organiza tus finanzas creando una nueva caja.</p>
+                <h3 className="text-xl font-semibold text-slate-800">Nueva Wallet</h3>
+                <p className="text-sm text-slate-500">Organiza tus finanzas creando una nueva wallet.</p>
               </div>
             </div>
 
@@ -82,7 +82,7 @@ export default function CreateWalletModal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-800 placeholder:text-slate-400 bg-slate-50 focus:bg-white focus:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ej. Caja Principal"
+                  placeholder="Ej. Wallet Principal"
                 />
               </div>
 
@@ -93,7 +93,7 @@ export default function CreateWalletModal() {
                   onChange={(e) => setDescription(e.target.value)}
                   rows={3}
                   className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-slate-800 placeholder:text-slate-400 bg-slate-50 focus:bg-white focus:border-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Opcional. Describe el propósito de la caja"
+                  placeholder="Opcional. Describe el propósito de la wallet"
                 />
               </div>
 
@@ -133,7 +133,7 @@ export default function CreateWalletModal() {
                   ) : (
                     <>
                       <Plus size={18} />
-                      Crear Caja
+                      Crear Wallet
                     </>
                   )}
                 </button>
