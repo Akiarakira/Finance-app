@@ -35,33 +35,6 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header con tasas actualizadas */}
-      <header className="flex justify-between items-center py-4">
-        <p className="text-slate-500">Hoy: {new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
-        <div className="flex items-center gap-4">
-          <span className="bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full">BCV: {bcvRate.toFixed(2)}</span>
-          <span className="bg-orange-100 text-orange-700 text-sm font-medium px-3 py-1 rounded-full">BIN Venta: {latestBinanceSell.toFixed(2)}</span>
-          <span className="bg-lime-100 text-lime-700 text-sm font-medium px-3 py-1 rounded-full">BIN Compra: {latestBinanceBuy.toFixed(2)}</span>
-
-          <button className="text-slate-400 hover:text-slate-600">
-            <Bell size={20} />
-          </button>
-          <div className="flex items-center gap-2">
-            <div className="bg-blue-100 text-blue-700 rounded-full w-8 h-8 flex items-center justify-center font-bold">JD</div>
-            <span className="text-slate-700">Usuario</span>
-          </div>
-        </div>
-      </header>
-
-      {/* Header de bienvenida + acción */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Hola de nuevo 👋</h1>
-          <p className="text-slate-500">Aquí tienes el resumen de tus finanzas hoy.</p>
-        </div>
-        <CreateWalletModal />
-      </div>
-
       {/* Grid de Resumen Rápido */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">

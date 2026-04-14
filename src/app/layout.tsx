@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,6 +29,28 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning
       >
+        <Script id="remove-bis-attrs" strategy="beforeInteractive">
+          {`
+            (function () {
+              var ATTR = 'bis_skin_checked';
+              function clean() {
+                try {
+                  document.querySelectorAll('[' + ATTR + ']').forEach(function (el) {
+                    el.removeAttribute(ATTR);
+                  });
+                } catch (e) {}
+              }
+              clean();
+              var observer = new MutationObserver(function () { clean(); });
+              observer.observe(document.documentElement, {
+                subtree: true,
+                childList: true,
+                attributes: true,
+                attributeFilter: [ATTR],
+              });
+            })();
+          `}
+        </Script>
         {children}
       </body>
     </html>
