@@ -75,6 +75,7 @@ export async function listWalletAccess(walletId: string): Promise<WalletAccessRe
 
 export async function searchUsersForWalletAccess(walletId: string, query: string): Promise<SearchWalletUsersResult> {
   try {
+    console.log('searchUsersForWalletAccess: Starting search with query:', query, 'walletId:', walletId);
     const supabase = await createClient();
 
     const {
@@ -82,17 +83,24 @@ export async function searchUsersForWalletAccess(walletId: string, query: string
       error: userError,
     } = await supabase.auth.getUser();
 
+    console.log('searchUsersForWalletAccess: Auth check - user:', user?.id, 'error:', userError);
+
     if (userError || !user) {
       return { success: false, error: 'No se pudo obtener la sesión del usuario.' };
     }
 
     const hasAccessManagementPermission = await canManageWalletAccess(supabase, walletId, user.id);
+    console.log('searchUsersForWalletAccess: Permission check result:', hasAccessManagementPermission);
+    
     if (!hasAccessManagementPermission) {
       return { success: false, error: 'No tienes permiso para gestionar accesos de esta wallet.' };
     }
 
     const normalizedQuery = query.trim();
+    console.log('searchUsersForWalletAccess: Normalized query:', normalizedQuery);
+    
     if (normalizedQuery.length < 2) {
+      console.log('searchUsersForWalletAccess: Query too short, returning empty results');
       return { success: true, users: [] };
     }
 
@@ -101,27 +109,35 @@ export async function searchUsersForWalletAccess(walletId: string, query: string
       .select('user_id')
       .eq('wallet_id', walletId);
 
+    console.log('searchUsersForWalletAccess: Existing permissions:', permissions);
     const existingUserIds = new Set((permissions ?? []).map((permission) => permission.user_id));
+
+    const searchCondition = `username.ilike.%${normalizedQuery}%,full_name.ilike.%${normalizedQuery}%,email.ilike.%${normalizedQuery}%`;
+    console.log('searchUsersForWalletAccess: Search condition:', searchCondition);
 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, full_name, avatar_url')
-      .or(`username.ilike.%${normalizedQuery}%,full_name.ilike.%${normalizedQuery}%`)
+      .select('id, username, full_name, avatar_url, email')
+      .or(searchCondition)
       .limit(20);
 
+    console.log('searchUsersForWalletAccess: Raw profiles found in DB:', profiles?.length, profiles);
     if (profilesError) {
+      console.error('searchUsersForWalletAccess: DB Error:', profilesError);
       return { success: false, error: profilesError.message || 'No se pudieron buscar usuarios.' };
     }
 
-    const users = (profiles ?? [])
-      .filter((profile) => !existingUserIds.has(profile.id))
-      .map((profile) => ({
-        id: profile.id,
-        username: profile.username ?? null,
-        fullName: profile.full_name ?? null,
-        avatarUrl: profile.avatar_url ?? null,
-      }));
+    const filteredUsers = (profiles ?? []).filter((profile) => !existingUserIds.has(profile.id));
+    console.log('searchUsersForWalletAccess: Profiles after filtering existing access:', filteredUsers.length);
 
+    const users = filteredUsers.map((profile) => ({
+      id: profile.id,
+      username: profile.username ?? null,
+      fullName: profile.full_name ?? null,
+      avatarUrl: profile.avatar_url ?? null,
+    }));
+
+    console.log('searchUsersForWalletAccess: Final users after filtering:', users);
     return { success: true, users };
   } catch (error) {
     console.error('searchUsersForWalletAccess error:', error);
@@ -347,6 +363,7 @@ async function canManageWalletAccess(supabase: Awaited<ReturnType<typeof createC
 
 export async function createWallet(name: string, description: string): Promise<CreateWalletResult> {
   try {
+    console.log('createWallet: Starting wallet creation with name:', name);
     const supabase = await createClient();
 
     const {
@@ -354,10 +371,13 @@ export async function createWallet(name: string, description: string): Promise<C
       error: userError,
     } = await supabase.auth.getUser();
 
+    console.log('createWallet: Auth check - user:', user?.id, 'error:', userError);
+    
     if (userError || !user) {
       return { success: false, error: 'No se pudo obtener la sesión del usuario.' };
     }
 
+    console.log('createWallet: Upserting profile for user:', user.id);
     const { error: profileError } = await supabase
       .from('profiles')
       .upsert({ id: user.id }, { onConflict: 'id' });
@@ -367,6 +387,7 @@ export async function createWallet(name: string, description: string): Promise<C
       return { success: false, error: 'No se pudo sincronizar el perfil del usuario.' };
     }
 
+    console.log('createWallet: Inserting wallet with data:', { name, description, created_by: user.id });
     const {
       data: wallet,
       error: walletError,
@@ -380,10 +401,14 @@ export async function createWallet(name: string, description: string): Promise<C
       .select()
       .single();
 
+    console.log('createWallet: Wallet insert result - wallet:', wallet, 'error:', walletError);
+
     if (walletError || !wallet) {
+      console.error('createWallet: Wallet creation failed:', { walletError, wallet });
       return { success: false, error: walletError?.message || 'No se pudo crear la wallet.' };
     }
 
+    console.log('createWallet: Inserting permission for wallet:', wallet.id, 'user:', user.id);
     const { error: permissionError } = await supabase
       .from('wallet_permissions')
       .insert({
@@ -392,10 +417,14 @@ export async function createWallet(name: string, description: string): Promise<C
         role: 'owner',
       });
 
+    console.log('createWallet: Permission insert result - error:', permissionError);
+
     if (permissionError) {
+      console.error('createWallet: Permission creation failed:', permissionError);
       return { success: false, error: permissionError.message };
     }
 
+    console.log('createWallet: Successfully created wallet:', wallet.id);
     return {
       success: true,
       wallet: {
@@ -405,7 +434,7 @@ export async function createWallet(name: string, description: string): Promise<C
       },
     };
   } catch (error) {
-    console.error('createWallet error:', error);
+    console.error('createWallet: Unexpected error:', error);
     return { success: false, error: 'Ocurrió un error creando la wallet.' };
   }
 }
