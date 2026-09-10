@@ -8,17 +8,15 @@ import DeleteWalletModal from '@/components/DeleteWalletModal';
 export default async function WalletsPage() {
   const supabase = await createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const user = session?.user;
-
-  type WalletRecord = { 
-    id: string; 
-    name: string; 
+  type WalletRecord = {
+    id: string;
+    name: string;
     description: string | null;
     created_at: string;
-    updated_at: string;
+    updated_at?: string;
     balance?: number;
   };
 
@@ -26,59 +24,63 @@ export default async function WalletsPage() {
 
   if (user) {
     try {
-      console.log('Fetching wallets for user:', user.id);
-      
-      // First get the wallet permissions for this user
-      const { data: permissions, error: permError } = await supabase
-        .from('wallet_permissions')
-        .select('wallet_id')
-        .eq('user_id', user.id);
-
-      console.log('Permissions query result:', { permissions, permError });
-
-      if (permError) {
-        console.error('Wallets page permissions error:', JSON.stringify(permError, null, 2));
-        
-        // Fallback: Try to get wallets directly by created_by
-        console.log('Trying fallback approach for wallets page...');
-        const { data: fallbackWallets, error: fallbackError } = await supabase
+      const [{ data: initialOwnedWallets, error: ownedError }, { data: permissions, error: permissionsError }] = await Promise.all([
+        supabase
           .from('wallets')
           .select('id, name, description, created_at, updated_at')
           .eq('created_by', user.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('wallet_permissions')
+          .select('wallet_id')
+          .eq('user_id', user.id),
+      ]);
+
+      let ownedWallets: WalletRecord[] = initialOwnedWallets ?? [];
+      if (ownedError) {
+        console.error('Wallets page owned wallets error:', ownedError.message);
+        const fallback = await supabase
+          .from('wallets')
+          .select('id, name, description, created_at')
+          .eq('created_by', user.id)
           .order('created_at', { ascending: false });
-          
-        console.log('Fallback query result:', { fallbackWallets, fallbackError });
-        
-        if (fallbackError) {
-          console.error('Fallback query also failed:', JSON.stringify(fallbackError, null, 2));
-        } else if (fallbackWallets) {
-          wallets = fallbackWallets;
-          console.log('Using fallback wallets:', wallets);
-        }
-      } else if (permissions && permissions.length > 0) {
-        // Then get the wallet details for the permitted wallets
-        const walletIds = permissions.map(p => p.wallet_id);
-        console.log('Wallet IDs from permissions:', walletIds);
-        
-        const { data: walletData, error: walletError } = await supabase
+        if (!fallback.error) ownedWallets = fallback.data ?? [];
+      }
+
+      const sharedWalletIds = (permissions ?? []).map((permission) => permission.wallet_id);
+      let sharedWallets: WalletRecord[] = [];
+
+      if (sharedWalletIds.length > 0) {
+        const { data, error } = await supabase
           .from('wallets')
           .select('id, name, description, created_at, updated_at')
-          .in('id', walletIds)
+          .in('id', sharedWalletIds)
           .order('created_at', { ascending: false });
 
-        console.log('Wallets query result:', { walletData, walletError });
-
-        if (walletError) {
-          console.error('Wallets page wallets error:', JSON.stringify(walletError, null, 2));
-        } else if (walletData) {
-          wallets = walletData;
-          console.log('Final wallets array:', wallets);
+        if (error) {
+          console.error('Wallets page shared wallets error:', error.message);
+          const fallback = await supabase
+            .from('wallets')
+            .select('id, name, description, created_at')
+            .in('id', sharedWalletIds)
+            .order('created_at', { ascending: false });
+          if (!fallback.error) sharedWallets = fallback.data ?? [];
+        } else {
+          sharedWallets = data ?? [];
         }
-      } else {
-        console.log('No permissions found for user');
       }
-    } catch (err) {
-      console.error('Unexpected wallets page error:', err);
+
+      const uniqueWallets = new Map<string, WalletRecord>();
+      for (const wallet of [...(ownedWallets ?? []), ...sharedWallets]) {
+        uniqueWallets.set(wallet.id, wallet);
+      }
+      wallets = [...uniqueWallets.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
+
+      if (permissionsError) {
+        console.error('Wallets page permissions error:', permissionsError.message);
+      }
+    } catch (error) {
+      console.error('Unexpected wallets page error:', error);
     }
   }
 
@@ -146,7 +148,7 @@ export default async function WalletsPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm text-slate-400">Actualizada</span>
                 <span className="text-sm text-slate-600">
-                  {new Date(wallet.updated_at).toLocaleDateString('es-ES', {
+                  {new Date(wallet.updated_at ?? wallet.created_at).toLocaleDateString('es-ES', {
                     day: '2-digit',
                     month: 'short',
                     year: 'numeric',

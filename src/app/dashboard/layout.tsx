@@ -11,6 +11,10 @@ export default async function DashboardLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
+  const { data: authData } = await supabase.auth.getUser();
+  const currentUser = authData.user;
+  const userEmail = currentUser?.email ?? 'Usuario';
+  const userInitials = userEmail.slice(0, 2).toUpperCase();
 
   // Fetch latest exchange rates
   const { data: bcvRates } = await supabase
@@ -61,9 +65,9 @@ export default async function DashboardLayout({
             </button>
             <div className="flex items-center gap-2 pl-4 border-l border-slate-200">
               <div className="size-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold text-xs">
-                JD
+                {userInitials}
               </div>
-              <span className="text-sm font-medium text-slate-700">Usuario</span>
+              <span className="max-w-48 truncate text-sm font-medium text-slate-700" title={userEmail}>{userEmail}</span>
             </div>
           </div>
         </header>
