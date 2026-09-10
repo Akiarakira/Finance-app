@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
-import { createServerClient } from '@supabase/ssr';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
+import { rejectProductionDiagnostics } from '@/lib/dev-only';
 
 export async function GET() {
+  const blocked = rejectProductionDiagnostics();
+  if (blocked) return blocked;
+
   const supabase = await createClient();
   
   try {
@@ -16,11 +20,11 @@ export async function GET() {
     // Intentar insertar con service role key (si existe)
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceKey) {
-      const serviceClient = createServerClient(
+      const serviceClient = createSupabaseClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         serviceKey,
         {
-          auth: { persistSession: false }
+          auth: { persistSession: false },
         }
       );
       

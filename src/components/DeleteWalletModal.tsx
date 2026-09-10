@@ -67,7 +67,7 @@ export default function DeleteWalletModal({ wallet }: DeleteWalletModalProps) {
 
             <div className="mb-6">
               <p className="text-slate-600">
-                ¿Estás seguro de que quieres eliminar la wallet <span className="font-semibold text-slate-800">"{wallet.name}"</span>?
+                ¿Estás seguro de que quieres eliminar la wallet <span className="font-semibold text-slate-800">&quot;{wallet.name}&quot;</span>?
               </p>
               <p className="text-sm text-slate-500 mt-2">
                 Todos los datos asociados serán eliminados permanentemente.

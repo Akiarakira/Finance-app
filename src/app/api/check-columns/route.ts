@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
+import { rejectProductionDiagnostics } from '@/lib/dev-only';
 
 export async function GET() {
+  const blocked = rejectProductionDiagnostics();
+  if (blocked) return blocked;
+
   const supabase = await createClient();
   
   try {
@@ -32,13 +36,13 @@ export async function GET() {
 
     for (const column of commonColumns) {
       try {
-        const { data: testData, error: testError } = await supabase
+        const { error: testError } = await supabase
           .from('exchange_rates')
           .select(`source, ${column}`)
           .limit(1);
         
         results[column] = testError ? 'ERROR' : 'EXISTS';
-      } catch (e) {
+      } catch {
         results[column] = 'ERROR';
       }
     }

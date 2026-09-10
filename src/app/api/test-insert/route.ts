@@ -1,18 +1,22 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase';
 import { fetchCurrentRates } from '@/lib/rates';
+import { rejectProductionDiagnostics } from '@/lib/dev-only';
 
 export async function GET() {
+  const blocked = rejectProductionDiagnostics();
+  if (blocked) return blocked;
+
   try {
     const supabase = await createClient();
-    const { bcv, binance } = await fetchCurrentRates();
+    const { bcv, binance_sell, binance_buy } = await fetchCurrentRates();
 
     // Test insertion with detailed error handling
     const { data, error } = await supabase
       .from('exchange_rates')
       .insert([
         { source: 'BCV', rate: bcv },
-        { source: 'Binance', rate: binance }
+        { source: 'Binance', rate: binance_sell, binance_buy_rate: binance_buy }
       ])
       .select();
 

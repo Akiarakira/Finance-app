@@ -473,7 +473,6 @@ export async function updateWallet(id: string, name: string, description: string
       .update({
         name,
         description,
-        updated_at: new Date().toISOString(),
       })
       .eq('id', id)
       .select()

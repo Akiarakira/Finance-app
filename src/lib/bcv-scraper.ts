@@ -7,9 +7,11 @@ export interface BcvRates {
   eurRate: number;
 }
 
-// Fallbacks actualizados a valores más recientes (ajustar periódicamente)
-const FALLBACK_BCV_USD = 378.46;
+// Fallbacks de emergencia cuando el BCV no responde.
+const FALLBACK_BCV_USD = 832.4883;
 const FALLBACK_BCV_EUR = 447.22;
+const MIN_VALID_RATE = 100;
+const MAX_VALID_RATE = 5000;
 
 export async function fetchBcvRates(): Promise<BcvRates> {
   const options = {
@@ -48,7 +50,7 @@ export async function fetchBcvRates(): Promise<BcvRates> {
       if (!text) return;
 
       const value = parseValue(text);
-      if (value < 200 || value > 600) return;
+      if (value < MIN_VALID_RATE || value > MAX_VALID_RATE) return;
 
       // Priorizar etiquetas que mencionen explícitamente USD/Dólar
       if (!usdRate && /USD|DÓLAR|Dolar|\$/.test(text)) {
@@ -63,7 +65,7 @@ export async function fetchBcvRates(): Promise<BcvRates> {
       if (!text) return;
 
       const value = parseValue(text);
-      if (value < 200 || value > 600) return;
+      if (value < MIN_VALID_RATE || value > MAX_VALID_RATE) return;
 
       if (!eurRate && /EUR|EURO|euro|€/.test(text)) {
         eurRate = value;
@@ -78,7 +80,7 @@ export async function fetchBcvRates(): Promise<BcvRates> {
         if (!text) return;
 
         const value = parseValue(text);
-        if (value < 200 || value > 600) return;
+        if (value < MIN_VALID_RATE || value > MAX_VALID_RATE) return;
 
         // Para USD: buscar texto con $ y palabras clave de dólar, pero excluir EUR/€
         if (!usdRate && /USD|DÓLAR|Dolar|\$/.test(text) && !/EUR|EURO|euro|€/.test(text)) {

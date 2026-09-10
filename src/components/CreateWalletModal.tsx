@@ -24,7 +24,7 @@ export default function CreateWalletModal() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [accessList, setAccessList] = useState<WalletAccessItem[]>([]);
   const [isPending, startTransition] = useTransition();
-  const [isAccessPending, startAccessTransition] = useTransition();
+  const [, startAccessTransition] = useTransition();
   const router = useRouter();
 
   const resetState = () => {

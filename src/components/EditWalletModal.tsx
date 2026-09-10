@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Wallet as WalletIcon, X, Edit2, Plus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Loader2, Wallet as WalletIcon, X, Edit2, Plus } from 'lucide-react';
 import { updateWallet, listWalletAccess } from '@/lib/actions/wallets';
 import WalletAccessManager from './WalletAccessManager';
 
@@ -31,7 +31,7 @@ export default function EditWalletModal({ wallet }: EditWalletModalProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [accessList, setAccessList] = useState<WalletAccessItem[]>([]);
   const [isPending, startTransition] = useTransition();
-  const [isAccessPending, startAccessTransition] = useTransition();
+  const [, startAccessTransition] = useTransition();
   const router = useRouter();
 
   const resetState = () => {
@@ -72,19 +72,6 @@ export default function EditWalletModal({ wallet }: EditWalletModalProps) {
     });
   };
 
-
-  const displayUserName = (user: { fullName: string | null; username: string | null }) => {
-    if (user.fullName && user.username) {
-      return `${user.fullName} (@${user.username})`;
-    }
-    if (user.fullName) {
-      return user.fullName;
-    }
-    if (user.username) {
-      return `@${user.username}`;
-    }
-    return 'Usuario sin nombre';
-  };
 
   return (
     <>

@@ -3,8 +3,8 @@
 
 -- Opción 1: Agregar solo email a profiles (recomendado)
 -- El email ya está disponible en auth.users, pero podemos sincronizarlo para facilitar consultas
-ALTER TABLE profiles 
-ADD COLUMN email TEXT;
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS email TEXT;
 
 -- Actualizar emails existentes desde auth.users
 UPDATE profiles 

@@ -1,0 +1,17 @@
+{
+  "name": "FinanzasApp",
+  "short_name": "FinanzasApp",
+  "description": "Administra tus wallets, movimientos y decisiones de pago.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

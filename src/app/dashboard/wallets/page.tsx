@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase';
-import { FolderKanban, Plus, MoreVertical } from 'lucide-react';
+import { FolderKanban, MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import CreateWalletModal from '@/components/CreateWalletModal';
 import EditWalletModal from '@/components/EditWalletModal';
@@ -18,6 +18,7 @@ export default async function WalletsPage() {
     name: string; 
     description: string | null;
     created_at: string;
+    updated_at: string;
     balance?: number;
   };
 
@@ -42,7 +43,7 @@ export default async function WalletsPage() {
         console.log('Trying fallback approach for wallets page...');
         const { data: fallbackWallets, error: fallbackError } = await supabase
           .from('wallets')
-          .select('id, name, description, created_at')
+          .select('id, name, description, created_at, updated_at')
           .eq('created_by', user.id)
           .order('created_at', { ascending: false });
           
@@ -61,7 +62,7 @@ export default async function WalletsPage() {
         
         const { data: walletData, error: walletError } = await supabase
           .from('wallets')
-          .select('id, name, description, created_at')
+          .select('id, name, description, created_at, updated_at')
           .in('id', walletIds)
           .order('created_at', { ascending: false });
 
@@ -139,6 +140,16 @@ export default async function WalletsPage() {
                     day: '2-digit', 
                     month: 'short', 
                     year: 'numeric' 
+                  })}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-slate-400">Actualizada</span>
+                <span className="text-sm text-slate-600">
+                  {new Date(wallet.updated_at).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: 'short',
+                    year: 'numeric',
                   })}
                 </span>
               </div>

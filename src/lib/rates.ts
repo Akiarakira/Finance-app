@@ -22,7 +22,7 @@ export async function fetchCurrentRates() {
     console.error("Error al obtener tasas:", error);
     // Valores de fallback cuando la API no está disponible
     return { 
-      bcv: 378.46, 
+      bcv: 832.4883, 
       bcv_eur: 447.22,
       binance_sell: 397.38,
       binance_buy: 395.0,

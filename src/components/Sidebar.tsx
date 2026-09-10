@@ -5,11 +5,13 @@ import {
   ArrowUpRight, 
   ArrowDownLeft, 
   Settings, 
-  LogOut,
   Users,
-  FolderKanban
+  FolderKanban,
+  ArrowRightLeft,
+  FileText
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+import LogoutButton from './LogoutButton';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
@@ -17,6 +19,8 @@ const menuItems = [
   { icon: ArrowUpRight, label: 'Ingresos', href: '/dashboard/income' },
   { icon: ArrowDownLeft, label: 'Gastos', href: '/dashboard/expenses' },
   { icon: Users, label: 'Compartidos', href: '/dashboard/shared' },
+  { icon: ArrowRightLeft, label: 'Comparar pagos', href: '/dashboard/compare' },
+  { icon: FileText, label: 'Estado de cuenta', href: '/dashboard/reports' },
 ];
 
 export default async function Sidebar() {
@@ -116,18 +120,19 @@ export default async function Sidebar() {
           )}
 
           {wallets.map((wallet) => (
-            <button
+            <Link
               key={wallet.id}
-              className="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-200 text-left hover:border-blue-200 hover:bg-blue-50/40 transition"
+              href={`/dashboard/wallets/${wallet.id}`}
+              className="flex w-full items-center gap-3 rounded-lg border border-slate-200 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50/40"
             >
               <FolderKanban size={18} className="text-blue-500" />
               <div className="flex flex-col">
                 <span className="text-sm font-semibold text-slate-700">{wallet.name}</span>
                 {wallet.description && (
-                  <span className="text-xs text-slate-500 line-clamp-1">{wallet.description}</span>
+                  <span className="line-clamp-1 text-xs text-slate-500">{wallet.description}</span>
                 )}
               </div>
-            </button>
+            </Link>
           ))}
         </div>
       </div>
@@ -137,10 +142,7 @@ export default async function Sidebar() {
           <Settings size={20} />
           <span>Configuración</span>
         </Link>
-        <button className="w-full flex items-center gap-3 p-3 text-red-500 hover:bg-red-50 rounded-lg transition-all">
-          <LogOut size={20} />
-          <span>Cerrar Sesión</span>
-        </button>
+        <LogoutButton />
       </div>
     </aside>
   );

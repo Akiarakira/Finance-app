@@ -4,6 +4,15 @@ import { fetchCurrentRates } from '@/lib/rates';
 
 export async function GET() {
   const supabase = await createClient();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: 'Debes iniciar sesión para actualizar las tasas.' }, { status: 401 });
+  }
+
   const { bcv, bcv_eur, binance_sell, binance_buy } = await fetchCurrentRates();
 
   if (bcv <= 0) {
@@ -11,7 +20,7 @@ export async function GET() {
   }
 
   // Obtener las tasas anteriores para mantener valores
-  const { data: lastRates, error: fetchError } = await supabase
+  const { data: lastRates } = await supabase
     .from('exchange_rates')
     .select('*')
     .order('created_at', { ascending: false })

@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
-import { createClient, createAdminClient } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase';
+import { rejectProductionDiagnostics } from '@/lib/dev-only';
 
 export async function POST(request: Request) {
+  const blocked = rejectProductionDiagnostics();
+  if (blocked) return blocked;
+
   try {
     const { walletId } = await request.json();
     

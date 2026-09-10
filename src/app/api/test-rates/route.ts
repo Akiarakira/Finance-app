@@ -1,13 +1,18 @@
 import { NextResponse } from 'next/server';
 import { fetchCurrentRates } from '@/lib/rates';
+import { rejectProductionDiagnostics } from '@/lib/dev-only';
 
 export async function GET() {
+  const blocked = rejectProductionDiagnostics();
+  if (blocked) return blocked;
+
   try {
-    const { bcv, binance } = await fetchCurrentRates();
+    const { bcv, binance_sell, binance_buy } = await fetchCurrentRates();
     return NextResponse.json({ 
       message: 'Rates fetched successfully', 
       bcv, 
-      binance,
+      binance_sell,
+      binance_buy,
       source: 'test-endpoint'
     });
   } catch (error) {

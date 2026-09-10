@@ -2,14 +2,16 @@
 import * as https from 'https';
 import * as zlib from 'zlib';
 
-export interface BinanceP2PResponse {
-  code: string;
-  data: {
-    [key: string]: {
-      asks: Array<[string, string]>;
-      bids: Array<[string, string]>;
-    };
+interface BinanceAd {
+  adv?: {
+    price?: string;
   };
+}
+
+interface BinanceP2PResponse {
+  code: string;
+  message?: string;
+  data?: BinanceAd[];
 }
 
 const BINANCE_ENDPOINT = 'https://p2p.binance.com/bapi/c2c/v2/friendly/c2c/adv/search';
@@ -89,12 +91,12 @@ async function fetchAds(tradeType: 'BUY' | 'SELL') {
     throw new Error(`La API devolvió HTML para ${tradeType}`);
   }
 
-  const result = JSON.parse(response);
+  const result = JSON.parse(response) as BinanceP2PResponse;
   if (result.code !== '0' && result.code !== '000000') {
     throw new Error(`Error en API Binance ${tradeType}: ${result.code} - ${result.message || 'Error desconocido'}`);
   }
 
-  return (result.data || []) as any[];
+  return result.data ?? [];
 }
 
 export async function fetchBinanceP2PRates() {
@@ -106,10 +108,10 @@ export async function fetchBinanceP2PRates() {
     ]);
 
     let bestBuyRate = 0; // Precio más bajo donde puedo comprar USDT (anuncios SELL)
-    sellAds.forEach((item: any) => {
+    sellAds.forEach((item) => {
       const adv = item.adv;
       if (!adv) return;
-      const price = parseFloat(adv.price);
+      const price = parseFloat(adv.price ?? '');
       if (!Number.isFinite(price) || price <= 0) return;
       if (bestBuyRate === 0 || price < bestBuyRate) {
         bestBuyRate = price;
@@ -117,10 +119,10 @@ export async function fetchBinanceP2PRates() {
     });
 
     let bestSellRate = 0; // Precio más alto donde puedo vender USDT (anuncios BUY)
-    buyAds.forEach((item: any) => {
+    buyAds.forEach((item) => {
       const adv = item.adv;
       if (!adv) return;
-      const price = parseFloat(adv.price);
+      const price = parseFloat(adv.price ?? '');
       if (!Number.isFinite(price) || price <= 0) return;
       if (price > bestSellRate) {
         bestSellRate = price;

@@ -8,9 +8,9 @@ SELECT
   full_name,
   email,
   avatar_url,
-  created_at
-FROM profiles 
-ORDER BY created_at DESC;
+  updated_at
+FROM profiles
+ORDER BY updated_at DESC;
 
 -- 2. Buscar específicamente el usuario andreinadibrigida8@gmail.com
 SELECT 

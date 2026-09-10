@@ -1,6 +1,9 @@
 import Sidebar from '@/components/Sidebar';
-import { Bell, User } from 'lucide-react';
+import RefreshRatesButton from '@/components/RefreshRatesButton';
+import { Bell } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 export default async function DashboardLayout({
   children,
@@ -45,7 +48,8 @@ export default async function DashboardLayout({
 
           <div className="flex items-center gap-4">
             {/* Widget de Tasas (Visualización rápida) */}
-            <div className="flex gap-2 text-xs font-bold">
+            <RefreshRatesButton />
+            <div className="flex flex-wrap gap-2 text-xs font-bold">
               <span className="text-green-600 bg-green-50 px-2 py-1 rounded">BCV: {bcvRate > 0 ? bcvRate.toFixed(2) : 'Cargando...'}</span>
               <span className="text-purple-600 bg-purple-50 px-2 py-1 rounded">EUR: {bcvEurRate > 0 ? bcvEurRate.toFixed(2) : 'Cargando...'}</span>
               <span className="text-orange-600 bg-orange-50 px-2 py-1 rounded">BIN V: {binanceSellRate > 0 ? binanceSellRate.toFixed(2) : 'Cargando...'}</span>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import { Search, Plus, User, Shield, Eye, Edit, Trash2 } from 'lucide-react';
+import { useEffect, useState, useTransition } from 'react';
+import { Search, Plus, User, Trash2 } from 'lucide-react';
 import { searchUsersForWalletAccess, grantWalletAccess, updateWalletAccessRole, revokeWalletAccess } from '@/lib/actions/wallets';
 
 interface WalletUser {
@@ -26,6 +26,10 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
   const [isUpdating, isUpdatingTransition] = useTransition();
   const [accessError, setAccessError] = useState<string | null>(null);
   const [accessMessage, setAccessMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    setAccessList(initialAccess);
+  }, [initialAccess]);
 
   const handleSearchUsers = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -65,8 +69,12 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
         return;
       }
 
+      const grantedUser = searchResults.find((user) => user.id === targetUserId);
+      if (grantedUser) {
+        setAccessList((current) => [...current, { ...grantedUser, role: 'editor' }]);
+      }
       setAccessMessage('Acceso otorgado exitosamente.');
-      setSearchResults(searchResults.filter(user => user.id !== targetUserId));
+      setSearchResults((current) => current.filter((user) => user.id !== targetUserId));
       onAccessChange?.();
     });
   };
@@ -82,6 +90,9 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
         return;
       }
 
+      setAccessList((current) => current.map((user) => (
+        user.id === targetUserId ? { ...user, role: newRole } : user
+      )));
       setAccessMessage('Rol actualizado exitosamente.');
       onAccessChange?.();
     });
@@ -98,6 +109,7 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
         return;
       }
 
+      setAccessList((current) => current.filter((user) => user.id !== targetUserId));
       setAccessMessage('Acceso revocado exitosamente.');
       onAccessChange?.();
     });
@@ -176,7 +188,12 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
                       {user.avatarUrl ? (
-                        <img src={user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        <div
+                          role="img"
+                          aria-label="Avatar del usuario"
+                          className="w-8 h-8 rounded-full bg-cover bg-center"
+                          style={{ backgroundImage: `url(${user.avatarUrl})` }}
+                        />
                       ) : (
                         <User size={16} className="text-slate-600" />
                       )}
