@@ -8,6 +8,7 @@ interface WalletUser {
   id: string;
   username: string | null;
   fullName: string | null;
+  email: string | null;
   avatarUrl: string | null;
   role?: 'owner' | 'editor' | 'viewer';
 }
@@ -156,7 +157,7 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
                   </div>
                   <div>
                     <p className="text-sm font-medium text-slate-900">
-                      {user.fullName || user.username || 'Usuario'}
+                      {user.fullName || user.username || user.email || 'Usuario'}
                     </p>
                     {user.username && user.fullName && (
                       <p className="text-xs text-slate-500">@{user.username}</p>
@@ -200,7 +201,7 @@ export default function WalletAccessManager({ walletId, initialAccess = [], onAc
                     </div>
                     <div>
                       <p className="text-sm font-medium text-slate-900">
-                        {user.fullName || user.username || 'Usuario'}
+                        {user.fullName || user.username || user.email || 'Usuario'}
                       </p>
                       {user.username && user.fullName && (
                         <p className="text-xs text-slate-500">@{user.username}</p>

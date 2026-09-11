@@ -46,7 +46,7 @@ export async function listWalletAccess(walletId: string): Promise<WalletAccessRe
 
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
-      .select('id, username, full_name, avatar_url')
+      .select('id, username, full_name, email, avatar_url')
       .in('id', userIds);
 
     if (profilesError) {
@@ -62,6 +62,7 @@ export async function listWalletAccess(walletId: string): Promise<WalletAccessRe
         role: permission.role,
         username: profile?.username ?? null,
         fullName: profile?.full_name ?? null,
+        email: profile?.email ?? null,
         avatarUrl: profile?.avatar_url ?? null,
       };
     });
@@ -134,6 +135,7 @@ export async function searchUsersForWalletAccess(walletId: string, query: string
       id: profile.id,
       username: profile.username ?? null,
       fullName: profile.full_name ?? null,
+      email: profile.email ?? null,
       avatarUrl: profile.avatar_url ?? null,
     }));
 
@@ -316,6 +318,7 @@ interface WalletAccessEntry {
   username: string | null;
   fullName: string | null;
   avatarUrl: string | null;
+  email: string | null;
 }
 
 interface WalletAccessResult {
@@ -332,6 +335,7 @@ interface SearchWalletUsersResult {
     username: string | null;
     fullName: string | null;
     avatarUrl: string | null;
+    email: string | null;
   }>;
 }
 

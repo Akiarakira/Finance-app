@@ -11,6 +11,7 @@ interface WalletAccessItem {
   role: string;
   username: string | null;
   fullName: string | null;
+  email: string | null;
   avatarUrl: string | null;
 }
 
@@ -199,6 +200,7 @@ export default function CreateWalletModal() {
                           id: item.userId,
                           username: item.username,
                           fullName: item.fullName,
+                          email: item.email,
                           avatarUrl: item.avatarUrl,
                           role: item.role as 'owner' | 'editor' | 'viewer'
                         }))}
