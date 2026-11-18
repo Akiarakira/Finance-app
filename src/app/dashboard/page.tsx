@@ -119,6 +119,7 @@ export default async function DashboardPage() {
                 <div>
                   <p className="font-medium text-slate-800">{transaction.description || 'Movimiento sin descripción'}</p>
                   <p className="text-sm text-slate-500">{transaction.category_name ?? 'Sin categoría'} · {transaction.transaction_date}</p>
+                  <p className="text-xs text-slate-400">Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}</p>
                 </div>
                 <span className={`font-semibold ${transaction.type === 'income' ? 'text-green-600' : 'text-slate-800'}`}>
                   {transaction.type === 'income' ? '+' : '-'} {transaction.amount.toFixed(2)} {transaction.currency}

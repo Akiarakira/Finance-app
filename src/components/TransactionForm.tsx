@@ -3,16 +3,29 @@
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createTransaction, type CategoryOption, type Currency, type PaymentMethod, type TransactionType, type WalletOption } from '@/lib/actions/transactions';
+import type { IncomeSource } from '@/lib/actions/income-sources';
 
 interface TransactionFormProps {
   type: TransactionType;
   wallets: WalletOption[];
   categories: CategoryOption[];
+  incomeSources?: IncomeSource[];
+  initialWalletId?: string;
 }
 
-export default function TransactionForm({ type, wallets, categories }: TransactionFormProps) {
-  const [walletId, setWalletId] = useState(wallets[0]?.id ?? '');
+const incomeTypeLabels: Record<IncomeSource['income_type'], string> = {
+  fixed: 'Fijo',
+  variable: 'Variable',
+  mixed: 'Mixto',
+};
+
+export default function TransactionForm({ type, wallets, categories, incomeSources = [], initialWalletId }: TransactionFormProps) {
+  const selectedWalletId = initialWalletId && wallets.some((wallet) => wallet.id === initialWalletId)
+    ? initialWalletId
+    : wallets[0]?.id ?? '';
+  const [walletId, setWalletId] = useState(selectedWalletId);
   const [categoryId, setCategoryId] = useState('');
+  const [incomeSourceId, setIncomeSourceId] = useState('');
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('other');
@@ -33,6 +46,7 @@ export default function TransactionForm({ type, wallets, categories }: Transacti
       const result = await createTransaction({
         walletId,
         categoryId: categoryId || null,
+        incomeSourceId: incomeSourceId || null,
         type,
         amount: Number(amount),
         currency,
@@ -86,6 +100,27 @@ export default function TransactionForm({ type, wallets, categories }: Transacti
           Fecha
           <input required type="date" value={transactionDate} onChange={(event) => setTransactionDate(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800" />
         </label>
+        {isIncome && (
+          <label className="text-sm font-medium text-slate-700">
+            Fuente de ingreso
+            <select value={incomeSourceId} onChange={(event) => setIncomeSourceId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">
+              <option value="">Sin fuente</option>
+              {incomeSources.map((source) => (
+                <option key={source.id} value={source.id}>
+                  {source.name} ({incomeTypeLabels[source.income_type]})
+                </option>
+              ))}
+            </select>
+            {incomeSourceId && (() => {
+              const source = incomeSources.find((item) => item.id === incomeSourceId);
+              return source?.expected_amount_usd != null && (
+                <span className="mt-1 block text-xs font-normal text-slate-400">
+                  Esperado: ${Number(source.expected_amount_usd).toFixed(2)} USD
+                </span>
+              );
+            })()}
+          </label>
+        )}
         <label className="text-sm font-medium text-slate-700">
           Categoría
           <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">

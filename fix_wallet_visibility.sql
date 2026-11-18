@@ -5,6 +5,18 @@
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.wallet_permissions ENABLE ROW LEVEL SECURITY;
 
+-- Garantiza un único permiso por wallet y usuario, necesario para el upsert
+-- que utiliza la aplicación al compartir una wallet.
+CREATE UNIQUE INDEX IF NOT EXISTS wallet_permissions_wallet_user_unique
+ON public.wallet_permissions (wallet_id, user_id);
+
+-- Repara wallets antiguas que no tenían su permiso owner inicial.
+INSERT INTO public.wallet_permissions (wallet_id, user_id, role)
+SELECT wallets.id, wallets.created_by, 'owner'
+FROM public.wallets
+WHERE wallets.created_by IS NOT NULL
+ON CONFLICT (wallet_id, user_id) DO NOTHING;
+
 -- Elimina las policies anteriores de ambas tablas para evitar que una
 -- policy antigua siga consultando la otra tabla de forma recursiva.
 DO $$

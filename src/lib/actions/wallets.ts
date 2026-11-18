@@ -173,17 +173,21 @@ export async function grantWalletAccess(
       return { success: false, error: 'Ya eres el propietario de esta wallet.' };
     }
 
-    const { error: upsertError } = await supabase.from('wallet_permissions').upsert(
-      {
-        wallet_id: walletId,
-        user_id: targetUserId,
-        role,
-      },
-      { onConflict: 'wallet_id,user_id' },
-    );
+    const { data: savedPermission, error: upsertError } = await supabase
+      .from('wallet_permissions')
+      .upsert(
+        {
+          wallet_id: walletId,
+          user_id: targetUserId,
+          role,
+        },
+        { onConflict: 'wallet_id,user_id' },
+      )
+      .select('wallet_id, user_id, role')
+      .single();
 
-    if (upsertError) {
-      return { success: false, error: upsertError.message || 'No se pudo asignar el acceso.' };
+    if (upsertError || !savedPermission) {
+      return { success: false, error: upsertError?.message || 'No se pudo verificar el acceso asignado.' };
     }
 
     return { success: true };

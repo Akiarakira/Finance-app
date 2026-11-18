@@ -1,5 +1,7 @@
 import TransactionForm from '@/components/TransactionForm';
+import IncomeSourcesManager from '@/components/IncomeSourcesManager';
 import { listAccessibleWallets, listCategories, listTransactions, type TransactionType } from '@/lib/actions/transactions';
+import { listIncomeSources } from '@/lib/actions/income-sources';
 
 const paymentLabels: Record<string, string> = {
   binance: 'Binance / Pay',
@@ -8,14 +10,16 @@ const paymentLabels: Record<string, string> = {
   other: 'Otro',
 };
 
-export default async function TransactionPage({ type }: { type: TransactionType }) {
-  const [walletsResult, categoriesResult, transactionsResult] = await Promise.all([
+export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
+  const isIncome = type === 'income';
+  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult] = await Promise.all([
     listAccessibleWallets(),
     listCategories(),
     listTransactions(type),
+    isIncome ? listIncomeSources(true) : Promise.resolve({ success: true as const, sources: [] }),
   ]);
-  const isIncome = type === 'income';
   const transactions = transactionsResult.transactions ?? [];
+  const incomeSources = incomeSourcesResult.sources ?? [];
 
   return (
     <div className="space-y-6">
@@ -30,10 +34,14 @@ export default async function TransactionPage({ type }: { type: TransactionType 
         </div>
       )}
 
+      {isIncome && <IncomeSourcesManager sources={incomeSources} />}
+
       <TransactionForm
         type={type}
         wallets={walletsResult.wallets ?? []}
         categories={categoriesResult.categories ?? []}
+        incomeSources={incomeSources.filter((source) => source.is_active)}
+        initialWalletId={initialWalletId}
       />
 
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -48,6 +56,10 @@ export default async function TransactionPage({ type }: { type: TransactionType 
                   <p className="font-medium text-slate-800">{transaction.description || 'Movimiento sin descripción'}</p>
                   <p className="text-sm text-slate-500">
                     {transaction.category_name ?? 'Sin categoría'} · {paymentLabels[transaction.payment_method] ?? transaction.payment_method} · {transaction.transaction_date}
+                    {transaction.income_source_name && ` · Fuente: ${transaction.income_source_name}`}
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}
                   </p>
                 </div>
                 <span className={`font-semibold ${isIncome ? 'text-green-600' : 'text-slate-800'}`}>

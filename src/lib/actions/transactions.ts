@@ -19,6 +19,9 @@ export interface CategoryOption {
 export interface TransactionRecord {
   id: string;
   wallet_id: string;
+  created_by: string;
+  created_by_name: string | null;
+  created_by_email: string | null;
   tag_id: string | null;
   type: TransactionType;
   amount: number;
@@ -27,11 +30,14 @@ export interface TransactionRecord {
   description: string | null;
   transaction_date: string;
   category_name: string | null;
+  income_source_id: string | null;
+  income_source_name: string | null;
 }
 
 export interface TransactionInput {
   walletId: string;
   categoryId?: string | null;
+  incomeSourceId?: string | null;
   type: TransactionType;
   amount: number;
   currency: Currency;
@@ -134,6 +140,7 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
         wallet_id: input.walletId,
         created_by: authData.user.id,
         tag_id: input.categoryId || null,
+        income_source_id: input.type === 'income' ? input.incomeSourceId || null : null,
         type: input.type,
         amount: input.amount,
         currency: input.currency,
@@ -161,7 +168,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const supabase = await createClient();
     let query = supabase
       .from('transactions')
-      .select('id, wallet_id, tag_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name)')
+      .select('id, wallet_id, created_by, tag_id, income_source_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name)')
       .order('transaction_date', { ascending: false })
       .limit(50);
 
@@ -169,12 +176,23 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const { data, error } = await query;
     if (error) return { success: false, error: error.message };
 
+    const creatorIds = [...new Set((data ?? []).map((item) => item.created_by))];
+    const { data: creators } = creatorIds.length > 0
+      ? await supabase.from('profiles').select('id, full_name, username, email').in('id', creatorIds)
+      : { data: [] };
+    const creatorsMap = new Map((creators ?? []).map((creator) => [creator.id, creator]));
+
     const transactions = (data ?? []).map((item) => {
       const tag = Array.isArray(item.tag) ? item.tag[0] : item.tag;
+      const incomeSource = Array.isArray(item.income_source) ? item.income_source[0] : item.income_source;
+      const creator = creatorsMap.get(item.created_by);
       return {
         ...item,
         amount: Number(item.amount),
         category_name: tag?.name ?? null,
+        income_source_name: incomeSource?.name ?? null,
+        created_by_name: creator?.full_name || creator?.username || null,
+        created_by_email: creator?.email ?? null,
       } as TransactionRecord;
     });
 

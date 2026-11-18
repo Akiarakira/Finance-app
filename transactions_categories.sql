@@ -20,6 +20,12 @@ CREATE TABLE IF NOT EXISTS transactions (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE transactions
+  ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES auth.users(id) ON DELETE RESTRICT;
+
+CREATE INDEX IF NOT EXISTS transactions_created_by_idx
+  ON transactions (created_by);
+
 CREATE INDEX IF NOT EXISTS transactions_wallet_date_idx
   ON transactions (wallet_id, transaction_date DESC);
 CREATE INDEX IF NOT EXISTS transactions_type_date_idx

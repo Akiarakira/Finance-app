@@ -76,6 +76,32 @@ export default async function WalletsPage() {
       }
       wallets = [...uniqueWallets.values()].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
+      const walletIds = wallets.map((wallet) => wallet.id);
+      if (walletIds.length > 0) {
+        const { data: transactions, error: transactionsError } = await supabase
+          .from('transactions')
+          .select('wallet_id, type, amount')
+          .in('wallet_id', walletIds);
+
+        if (transactionsError) {
+          console.error('Wallets page balances error:', transactionsError.message);
+        } else {
+          const balances = new Map<string, number>();
+          for (const transaction of transactions ?? []) {
+            const amount = Number(transaction.amount) || 0;
+            const currentBalance = balances.get(transaction.wallet_id) ?? 0;
+            balances.set(
+              transaction.wallet_id,
+              transaction.type === 'income' ? currentBalance + amount : currentBalance - amount,
+            );
+          }
+          wallets = wallets.map((wallet) => ({
+            ...wallet,
+            balance: balances.get(wallet.id) ?? 0,
+          }));
+        }
+      }
+
       if (permissionsError) {
         console.error('Wallets page permissions error:', permissionsError.message);
       }
@@ -132,7 +158,7 @@ export default async function WalletsPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-slate-400">Balance</span>
-                <span className="text-lg font-bold text-slate-800">$0.00</span>
+                <span className="text-lg font-bold text-slate-800">${(wallet.balance ?? 0).toFixed(2)}</span>
               </div>
               
               <div className="flex justify-between items-center">
@@ -157,16 +183,32 @@ export default async function WalletsPage() {
               </div>
             </div>
             
-            <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2">
-              <Link
-                href={`/dashboard/wallets/${wallet.id}`}
-                className="flex-1 text-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition"
-              >
-                Ver detalles
-              </Link>
+            <div className="mt-4 border-t border-slate-100 pt-4">
+              <div className="mb-2 grid grid-cols-2 gap-2">
+                <Link
+                  href={`/dashboard/income?walletId=${wallet.id}`}
+                  className="rounded-lg bg-green-50 px-2 py-2 text-center text-xs font-semibold text-green-700 transition hover:bg-green-100"
+                >
+                  + Ingreso
+                </Link>
+                <Link
+                  href={`/dashboard/expenses?walletId=${wallet.id}`}
+                  className="rounded-lg bg-red-50 px-2 py-2 text-center text-xs font-semibold text-red-700 transition hover:bg-red-100"
+                >
+                  + Gasto
+                </Link>
+              </div>
               <div className="flex gap-2">
-                <EditWalletModal wallet={wallet} />
-                <DeleteWalletModal wallet={wallet} />
+                <Link
+                  href={`/dashboard/wallets/${wallet.id}`}
+                  className="flex-1 rounded-lg bg-blue-50 px-3 py-2 text-center text-sm font-medium text-blue-600 transition hover:bg-blue-100"
+                >
+                  Ver detalles
+                </Link>
+                <div className="flex gap-2">
+                  <EditWalletModal wallet={wallet} />
+                  <DeleteWalletModal wallet={wallet} />
+                </div>
               </div>
             </div>
           </div>

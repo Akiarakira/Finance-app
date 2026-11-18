@@ -1,5 +1,6 @@
 import TransactionPage from '@/components/TransactionPage';
 
-export default function ExpensesPage() {
-  return <TransactionPage type="expense" />;
+export default async function ExpensesPage({ searchParams }: { searchParams: Promise<{ walletId?: string }> }) {
+  const { walletId } = await searchParams;
+  return <TransactionPage type="expense" initialWalletId={walletId} />;
 }

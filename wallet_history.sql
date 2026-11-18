@@ -20,6 +20,23 @@ CREATE TABLE IF NOT EXISTS wallet_history (
   changed_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE wallet_history
+  ADD COLUMN IF NOT EXISTS wallet_id_at_event UUID;
+
+ALTER TABLE wallet_history
+  ALTER COLUMN wallet_id DROP NOT NULL;
+
+ALTER TABLE wallet_history
+  DROP CONSTRAINT IF EXISTS wallet_history_wallet_id_fkey;
+
+ALTER TABLE wallet_history
+  ADD CONSTRAINT wallet_history_wallet_id_fkey
+  FOREIGN KEY (wallet_id) REFERENCES wallets(id) ON DELETE SET NULL;
+
+UPDATE wallet_history
+SET wallet_id_at_event = wallet_id
+WHERE wallet_id_at_event IS NULL;
+
 CREATE INDEX IF NOT EXISTS wallet_history_wallet_date_idx
   ON wallet_history (wallet_id, changed_at DESC);
 
@@ -44,28 +61,28 @@ AS $$
 BEGIN
   IF TG_OP = 'INSERT' THEN
     INSERT INTO wallet_history (
-      wallet_id, changed_by, action, new_name, new_description
+      wallet_id, wallet_id_at_event, changed_by, action, new_name, new_description
     ) VALUES (
-      NEW.id, auth.uid(), 'created', NEW.name, NEW.description
+      NEW.id, NEW.id, auth.uid(), 'created', NEW.name, NEW.description
     );
     RETURN NEW;
   END IF;
 
   IF TG_OP = 'UPDATE' THEN
     INSERT INTO wallet_history (
-      wallet_id, changed_by, action,
+      wallet_id, wallet_id_at_event, changed_by, action,
       old_name, old_description, new_name, new_description
     ) VALUES (
-      NEW.id, auth.uid(), 'updated',
+      NEW.id, NEW.id, auth.uid(), 'updated',
       OLD.name, OLD.description, NEW.name, NEW.description
     );
     RETURN NEW;
   END IF;
 
   INSERT INTO wallet_history (
-    wallet_id, changed_by, action, old_name, old_description
+    wallet_id, wallet_id_at_event, changed_by, action, old_name, old_description
   ) VALUES (
-    OLD.id, auth.uid(), 'deleted', OLD.name, OLD.description
+    NULL, OLD.id, auth.uid(), 'deleted', OLD.name, OLD.description
   );
   RETURN OLD;
 END;
