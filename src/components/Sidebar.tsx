@@ -1,10 +1,11 @@
 import Link from 'next/link';
-import { 
-  LayoutDashboard, 
-  Wallet, 
-  ArrowUpRight, 
-  ArrowDownLeft, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Wallet,
+  Landmark,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Settings,
   Users,
   FolderKanban,
   ArrowRightLeft,
@@ -16,6 +17,7 @@ import LogoutButton from './LogoutButton';
 const menuItems = [
   { icon: LayoutDashboard, label: 'Resumen', href: '/dashboard' },
   { icon: Wallet, label: 'Mis Cajas', href: '/dashboard/wallets' },
+  { icon: Landmark, label: 'Cuentas', href: '/dashboard/accounts' },
   { icon: ArrowUpRight, label: 'Ingresos', href: '/dashboard/income' },
   { icon: ArrowDownLeft, label: 'Gastos', href: '/dashboard/expenses' },
   { icon: Users, label: 'Compartidos', href: '/dashboard/shared' },

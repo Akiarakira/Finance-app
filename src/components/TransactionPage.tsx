@@ -2,6 +2,7 @@ import TransactionForm from '@/components/TransactionForm';
 import IncomeSourcesManager from '@/components/IncomeSourcesManager';
 import { listAccessibleWallets, listCategories, listTransactions, type TransactionType } from '@/lib/actions/transactions';
 import { listIncomeSources } from '@/lib/actions/income-sources';
+import { listAccounts } from '@/lib/actions/accounts';
 
 const paymentLabels: Record<string, string> = {
   binance: 'Binance / Pay',
@@ -12,14 +13,16 @@ const paymentLabels: Record<string, string> = {
 
 export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
   const isIncome = type === 'income';
-  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult] = await Promise.all([
+  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult] = await Promise.all([
     listAccessibleWallets(),
     listCategories(),
     listTransactions(type),
     isIncome ? listIncomeSources(true) : Promise.resolve({ success: true as const, sources: [] }),
+    listAccounts(),
   ]);
   const transactions = transactionsResult.transactions ?? [];
   const incomeSources = incomeSourcesResult.sources ?? [];
+  const accounts = accountsResult.accounts ?? [];
 
   return (
     <div className="space-y-6">
@@ -34,13 +37,14 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
         </div>
       )}
 
-      {isIncome && <IncomeSourcesManager sources={incomeSources} />}
+      {isIncome && <IncomeSourcesManager sources={incomeSources} accounts={accounts} />}
 
       <TransactionForm
         type={type}
         wallets={walletsResult.wallets ?? []}
         categories={categoriesResult.categories ?? []}
         incomeSources={incomeSources.filter((source) => source.is_active)}
+        accounts={accounts}
         initialWalletId={initialWalletId}
       />
 
@@ -57,6 +61,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
                   <p className="text-sm text-slate-500">
                     {transaction.category_name ?? 'Sin categoría'} · {paymentLabels[transaction.payment_method] ?? transaction.payment_method} · {transaction.transaction_date}
                     {transaction.income_source_name && ` · Fuente: ${transaction.income_source_name}`}
+                    {transaction.account_name && ` · Cuenta: ${transaction.account_name}`}
                   </p>
                   <p className="text-xs text-slate-400">
                     Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}

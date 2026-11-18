@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase';
 
 export type TransactionType = 'income' | 'expense';
 export type PaymentMethod = 'binance' | 'bs' | 'cash_usd' | 'other';
-export type Currency = 'USD' | 'VES' | 'EUR';
+export type Currency = 'USD' | 'USDT' | 'VES' | 'EUR';
 
 export interface WalletOption {
   id: string;
@@ -32,12 +32,15 @@ export interface TransactionRecord {
   category_name: string | null;
   income_source_id: string | null;
   income_source_name: string | null;
+  account_id: string | null;
+  account_name: string | null;
 }
 
 export interface TransactionInput {
   walletId: string;
   categoryId?: string | null;
   incomeSourceId?: string | null;
+  accountId?: string | null;
   type: TransactionType;
   amount: number;
   currency: Currency;
@@ -134,6 +137,19 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
     const { data: authData, error: authError } = await supabase.auth.getUser();
     if (authError || !authData.user) return { success: false, error: 'Debes iniciar sesión para registrar movimientos.' };
 
+    let accountSpaceId: string | null = null;
+    if (input.accountId) {
+      const { data: account, error: accountError } = await supabase
+        .from('accounts')
+        .select('id, space_id')
+        .eq('id', input.accountId)
+        .maybeSingle();
+
+      if (accountError) return { success: false, error: accountError.message };
+      if (!account) return { success: false, error: 'La cuenta seleccionada no existe o no tienes acceso a ella.' };
+      accountSpaceId = account.space_id;
+    }
+
     const { data, error } = await supabase
       .from('transactions')
       .insert({
@@ -141,6 +157,8 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
         created_by: authData.user.id,
         tag_id: input.categoryId || null,
         income_source_id: input.type === 'income' ? input.incomeSourceId || null : null,
+        account_id: input.accountId || null,
+        space_id: accountSpaceId,
         type: input.type,
         amount: input.amount,
         currency: input.currency,
@@ -168,7 +186,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const supabase = await createClient();
     let query = supabase
       .from('transactions')
-      .select('id, wallet_id, created_by, tag_id, income_source_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name)')
+      .select('id, wallet_id, created_by, tag_id, income_source_id, account_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name), account:accounts(name)')
       .order('transaction_date', { ascending: false })
       .limit(50);
 
@@ -185,12 +203,14 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const transactions = (data ?? []).map((item) => {
       const tag = Array.isArray(item.tag) ? item.tag[0] : item.tag;
       const incomeSource = Array.isArray(item.income_source) ? item.income_source[0] : item.income_source;
+      const account = Array.isArray(item.account) ? item.account[0] : item.account;
       const creator = creatorsMap.get(item.created_by);
       return {
         ...item,
         amount: Number(item.amount),
         category_name: tag?.name ?? null,
         income_source_name: incomeSource?.name ?? null,
+        account_name: account?.name ?? null,
         created_by_name: creator?.full_name || creator?.username || null,
         created_by_email: creator?.email ?? null,
       } as TransactionRecord;

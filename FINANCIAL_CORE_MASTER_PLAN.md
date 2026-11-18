@@ -766,8 +766,8 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 ### Fuentes de ingreso
 
 - [x] Vista de fuentes activas con su clasificación fijo/variable/mixto.
-- [x] Crear fuente: nombre, tipo, monto esperado, componente variable, frecuencia y día de cobro (cuenta destino pendiente de `accounts`).
-- [ ] Editar, pausar y archivar fuentes.
+- [x] Crear fuente: nombre, tipo, monto esperado, componente variable, frecuencia, día de cobro y cuenta destino.
+- [x] Editar, pausar y archivar fuentes.
 - [ ] Mostrar cobrado vs. esperado del periodo por fuente.
 - [ ] Mostrar desviación de cada cobro contra lo esperado.
 - [ ] Configurar la regla de base presupuestaria (solo fijo / esperado / promedio).

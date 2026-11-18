@@ -40,12 +40,61 @@
 
 ---
 
+## Sesión 2026-11-18 — Edición de fuentes + Slice 2: Espacios y cuentas ✅ (código)
+
+### Qué se hizo
+
+**Edición de fuentes (commit `75d63b5`):**
+- `IncomeSourcesManager` — botón Editar por fila con formulario inline (campos compartidos entre crear/editar), usa `updateIncomeSource` que ya existía
+
+**Migración pendiente de ejecutar (usuaria):**
+- Script: `supabase/migrations/20261118_01_financial_spaces_accounts.sql` → pegar en SQL Editor
+- Enums `financial_space_type_enum` y `account_type_enum`
+- Tablas: `financial_spaces`, `financial_space_members` (roles owner/admin/editor/viewer), `accounts`, `financial_settings`
+- Funciones `SECURITY DEFINER` `is_space_member/is_space_editor/is_space_admin` (patrón anti-recursión igual al de wallets)
+- RLS en las 4 tablas + policy extra para que miembros vean fuentes de su espacio
+- `ALTER income_sources`: `space_id` + `destination_account_id`
+- `ALTER transactions`: `account_id` + `space_id` + `USDT` en el CHECK de moneda
+
+**Código:**
+- `src/lib/actions/financial-spaces.ts` — nuevo: `listFinancialSpaces` (con rol propio), `getOrCreatePersonalSpace` (idempotente, crea "Personal" + membresía owner), `create`, `update`, `setActive`, `delete` (bloquea si tiene cuentas)
+- `src/lib/actions/accounts.ts` — nuevo: `list` (con nombre/tipo del espacio), `create` (con saldo inicial), `update` (puede mover de espacio), `setArchived`, `delete` (bloquea si tiene movimientos o fuentes)
+- `src/app/dashboard/accounts/page.tsx` — nueva página; asegura espacio personal y calcula balance = saldo inicial + movimientos por cuenta
+- `src/components/SpacesManager.tsx` — nuevo: crear/editar/desactivar/eliminar espacios
+- `src/components/AccountsManager.tsx` — nuevo: crear/editar/archivar/eliminar cuentas por espacio
+- `income-sources.ts` — `destinationAccountId` en input; guarda `destination_account_id` y deriva `space_id` de la cuenta
+- `transactions.ts` — `accountId` en input; sella `account_id` + `space_id` de la cuenta; `USDT` en `Currency`; join `account:accounts(name)`
+- `TransactionForm` — selector de cuenta (ambos tipos) + opción USDT
+- `TransactionPage` — pasa cuentas al form y al manager; muestra `Cuenta: X`
+- `IncomeSourcesManager` — selector "Cuenta destino" en crear/editar; muestra `Destino: X`
+- `Sidebar` — entrada "Cuentas" → `/dashboard/accounts`
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- `current_balance` en `accounts` guarda el **saldo inicial declarado**; el balance mostrado = inicial + Σ movimientos vinculados (mismo cálculo que wallets). La actualización automática de saldos queda para Fase 3
+- Una fuente con cuenta destino hereda el `space_id` de esa cuenta; sin cuenta queda `NULL` (personal)
+- Borrar espacio bloqueado si tiene cuentas; borrar cuenta bloqueado si tiene movimientos/fuentes (usar archivar)
+- Transactions siguen viviendo en wallets; `account_id`/`space_id` son opcionales y no cambian la visibilidad actual
+- Membresías (invitar miembros) quedan para un slice posterior; hoy el creador es owner automático
+- `financial_settings` ya tiene tabla+RLS pero sin actions/UI (slice de valoración)
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `20261118_01_financial_spaces_accounts.sql` en Supabase
+- Entrar a `/dashboard/accounts`: debe auto-crearse el espacio "Personal"
+- Crear cuenta (ej. Binance USDT), registrar ingreso/gasto con esa cuenta y verificar `account_id`/`space_id` en Supabase
+- Crear fuente con cuenta destino y confirmar `space_id` heredado
+- Cuando se confirme, marcar checkboxes de Fase 1/4 en el plan maestro
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Editar fuente** — `updateIncomeSource` existe pero no hay UI de edición (solo crear/pausar/eliminar)
-2. **Slice `financial_spaces` + `accounts`** — base estructural: todo lo demás (custodia, deudas, presupuesto por espacio) depende de estas tablas. Después, `ALTER income_sources` para agregar `space_id` + `destination_account_id`
-3. **Lógica de ingresos** — cobrado vs. esperado del periodo, split fijo/variable en mixtas, promedio móvil
-4. **Dashboard** — tarjeta de ingresos del mes (esperado vs. recibido, % fijo/variable) + alerta de cobro pendiente
+1. **Ejecutar migración `20261118_01`** en Supabase y probar `/dashboard/accounts` (pendiente verificación manual)
+2. **Lógica de ingresos** — cobrado vs. esperado del periodo, split fijo/variable en mixtas, promedio móvil
+3. **Dashboard** — tarjeta de ingresos del mes (esperado vs. recibido, % fijo/variable) + alerta de cobro pendiente
+4. **Membresías de espacio** — invitar miembros al Hogar/Custodia con roles (`financial_space_members` ya tiene RLS)
+5. **Selector de espacio** en dashboard/transacciones + migración de wallets a espacios/cuentas
 
 ## Cómo retomar mañana
 
@@ -55,5 +104,5 @@ npm run dev   # http://localhost:3000
 ```
 
 - Roadmap con checkboxes actualizados: `FINANCIAL_CORE_MASTER_PLAN.md`
-- Último slice: fuentes de ingreso funcionales en `/dashboard/income`
+- Último slice: espacios + cuentas en `/dashboard/accounts` (requiere ejecutar migración `20261118_01`)
 - Para nuevos slices: crear script en `supabase/migrations/` → pegar en SQL Editor → implementar actions/UI → `npx tsc --noEmit && npm run lint`

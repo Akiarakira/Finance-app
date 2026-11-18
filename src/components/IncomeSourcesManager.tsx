@@ -12,6 +12,7 @@ import {
   type IncomeSourceInput,
   type IncomeType,
 } from '@/lib/actions/income-sources';
+import type { Account } from '@/lib/actions/accounts';
 
 const typeLabels: Record<IncomeType, string> = {
   fixed: 'Fijo',
@@ -39,6 +40,7 @@ interface SourceFormValues {
   variableAmount: string;
   frequency: IncomeFrequency;
   payDay: string;
+  destinationAccountId: string;
 }
 
 const emptyForm: SourceFormValues = {
@@ -48,6 +50,7 @@ const emptyForm: SourceFormValues = {
   variableAmount: '',
   frequency: 'monthly',
   payDay: '',
+  destinationAccountId: '',
 };
 
 function toFormValues(source: IncomeSource): SourceFormValues {
@@ -58,6 +61,7 @@ function toFormValues(source: IncomeSource): SourceFormValues {
     variableAmount: source.variable_component_usd != null ? String(source.variable_component_usd) : '',
     frequency: source.frequency,
     payDay: source.pay_day_of_month != null ? String(source.pay_day_of_month) : '',
+    destinationAccountId: source.destination_account_id ?? '',
   };
 }
 
@@ -69,10 +73,11 @@ function toInput(values: SourceFormValues): IncomeSourceInput {
     variableComponentUsd: values.incomeType === 'mixed' && values.variableAmount ? Number(values.variableAmount) : null,
     frequency: values.frequency,
     payDayOfMonth: values.payDay ? Number(values.payDay) : null,
+    destinationAccountId: values.destinationAccountId || null,
   };
 }
 
-function SourceFormFields({ values, onChange }: { values: SourceFormValues; onChange: (patch: Partial<SourceFormValues>) => void }) {
+function SourceFormFields({ values, accounts, onChange }: { values: SourceFormValues; accounts: Account[]; onChange: (patch: Partial<SourceFormValues>) => void }) {
   const requiresExpected = values.incomeType !== 'variable';
   const inputClass = 'mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800';
   return (
@@ -112,11 +117,24 @@ function SourceFormFields({ values, onChange }: { values: SourceFormValues; onCh
         Día de cobro
         <input min="1" max="31" type="number" value={values.payDay} onChange={(event) => onChange({ payDay: event.target.value })} className={inputClass} placeholder="Opcional" />
       </label>
+      {accounts.length > 0 && (
+        <label className="text-sm font-medium text-slate-700">
+          Cuenta destino
+          <select value={values.destinationAccountId} onChange={(event) => onChange({ destinationAccountId: event.target.value })} className={inputClass}>
+            <option value="">Sin cuenta</option>
+            {accounts.map((account) => (
+              <option key={account.id} value={account.id}>
+                {account.name} · {account.currency}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
     </>
   );
 }
 
-export default function IncomeSourcesManager({ sources }: { sources: IncomeSource[] }) {
+export default function IncomeSourcesManager({ sources, accounts = [] }: { sources: IncomeSource[]; accounts?: Account[] }) {
   const [createForm, setCreateForm] = useState<SourceFormValues>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<SourceFormValues>(emptyForm);
@@ -187,7 +205,7 @@ export default function IncomeSourcesManager({ sources }: { sources: IncomeSourc
       <h2 className="mb-4 font-bold text-slate-800">Fuentes de ingreso</h2>
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <SourceFormFields values={createForm} onChange={(patch) => setCreateForm((current) => ({ ...current, ...patch }))} />
+        <SourceFormFields values={createForm} accounts={accounts} onChange={(patch) => setCreateForm((current) => ({ ...current, ...patch }))} />
         <div className="flex items-end">
           <button type="submit" disabled={isPending} className="w-full rounded-lg bg-blue-600 px-4 py-2.5 font-semibold text-white hover:bg-blue-500 disabled:opacity-60">
             {isPending ? 'Guardando...' : 'Agregar fuente'}
@@ -205,7 +223,7 @@ export default function IncomeSourcesManager({ sources }: { sources: IncomeSourc
             <div key={source.id} className={`py-3 ${!source.is_active ? 'opacity-50' : ''}`}>
               {editingId === source.id ? (
                 <form onSubmit={handleUpdate} className="grid grid-cols-1 gap-4 rounded-lg bg-slate-50 p-4 md:grid-cols-3 lg:grid-cols-6">
-                  <SourceFormFields values={editForm} onChange={(patch) => setEditForm((current) => ({ ...current, ...patch }))} />
+                  <SourceFormFields values={editForm} accounts={accounts} onChange={(patch) => setEditForm((current) => ({ ...current, ...patch }))} />
                   <div className="flex items-end gap-2 md:col-span-3 lg:col-span-6">
                     <button type="submit" disabled={isPending} className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500 disabled:opacity-60">
                       {isPending ? 'Guardando...' : 'Guardar cambios'}
@@ -230,6 +248,7 @@ export default function IncomeSourcesManager({ sources }: { sources: IncomeSourc
                       {source.income_type === 'mixed' && source.variable_component_usd != null && ` + $${Number(source.variable_component_usd).toFixed(2)} variable`}
                       {' · '}{frequencyLabels[source.frequency]}
                       {source.pay_day_of_month != null && ` · día ${source.pay_day_of_month}`}
+                      {source.destination_account_name && ` · Destino: ${source.destination_account_name}`}
                     </p>
                   </div>
                   <div className="flex gap-2">

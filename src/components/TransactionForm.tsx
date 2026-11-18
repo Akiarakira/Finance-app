@@ -4,12 +4,14 @@ import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { createTransaction, type CategoryOption, type Currency, type PaymentMethod, type TransactionType, type WalletOption } from '@/lib/actions/transactions';
 import type { IncomeSource } from '@/lib/actions/income-sources';
+import type { Account } from '@/lib/actions/accounts';
 
 interface TransactionFormProps {
   type: TransactionType;
   wallets: WalletOption[];
   categories: CategoryOption[];
   incomeSources?: IncomeSource[];
+  accounts?: Account[];
   initialWalletId?: string;
 }
 
@@ -19,13 +21,14 @@ const incomeTypeLabels: Record<IncomeSource['income_type'], string> = {
   mixed: 'Mixto',
 };
 
-export default function TransactionForm({ type, wallets, categories, incomeSources = [], initialWalletId }: TransactionFormProps) {
+export default function TransactionForm({ type, wallets, categories, incomeSources = [], accounts = [], initialWalletId }: TransactionFormProps) {
   const selectedWalletId = initialWalletId && wallets.some((wallet) => wallet.id === initialWalletId)
     ? initialWalletId
     : wallets[0]?.id ?? '';
   const [walletId, setWalletId] = useState(selectedWalletId);
   const [categoryId, setCategoryId] = useState('');
   const [incomeSourceId, setIncomeSourceId] = useState('');
+  const [accountId, setAccountId] = useState('');
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('other');
@@ -47,6 +50,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
         walletId,
         categoryId: categoryId || null,
         incomeSourceId: incomeSourceId || null,
+        accountId: accountId || null,
         type,
         amount: Number(amount),
         currency,
@@ -92,6 +96,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
           Moneda
           <select value={currency} onChange={(event) => setCurrency(event.target.value as Currency)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">
             <option value="USD">USD</option>
+            <option value="USDT">USDT</option>
             <option value="VES">Bs</option>
             <option value="EUR">EUR</option>
           </select>
@@ -100,6 +105,19 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
           Fecha
           <input required type="date" value={transactionDate} onChange={(event) => setTransactionDate(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800" />
         </label>
+        {accounts.length > 0 && (
+          <label className="text-sm font-medium text-slate-700">
+            Cuenta
+            <select value={accountId} onChange={(event) => setAccountId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">
+              <option value="">Sin cuenta</option>
+              {accounts.map((account) => (
+                <option key={account.id} value={account.id}>
+                  {account.name} · {account.currency}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         {isIncome && (
           <label className="text-sm font-medium text-slate-700">
             Fuente de ingreso
