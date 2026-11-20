@@ -82,19 +82,47 @@
 
 ### Pendiente de verificación manual (usuaria)
 
-- Ejecutar `20261118_01_financial_spaces_accounts.sql` en Supabase
+- Ejecutar `20261118_01_financial_spaces_accounts.sql` en Supabase — **CONFIRMADO por la usuaria** (migración corrió; el error inicial era solo la caché de schema de PostgREST)
 - Entrar a `/dashboard/accounts`: debe auto-crearse el espacio "Personal"
 - Crear cuenta (ej. Binance USDT), registrar ingreso/gasto con esa cuenta y verificar `account_id`/`space_id` en Supabase
 - Crear fuente con cuenta destino y confirmar `space_id` heredado
 - Cuando se confirme, marcar checkboxes de Fase 1/4 en el plan maestro
 
+---
+
+## Sesión 2026-11-18 (cont.) — Slice 3: Lógica de ingresos ✅
+
+### Qué se hizo
+
+**Código:**
+- `src/lib/actions/income-summary.ts` — nuevo: `getIncomePeriodSummary(month)` calcula por fuente y por periodo: esperado (× períodos según frecuencia: mensual 1, quincenal 2, semanal 4, otra 1), recibido, split fijo/variable (hasta `expected` cuenta fijo, excedente variable), pendiente, estado cobrado/parcial/pendiente; más totales del mes, % estabilidad, promedio móvil variable de 3 meses, base 50-30-20 sugerida (fijo esperado + promedio variable) y excedente variable
+- `src/app/dashboard/page.tsx` — nueva tarjeta "Ingresos del mes": barra fijo recibido vs. esperado, % fijo/variable, base 50-30-20, alerta de cobros pendientes, sugerencia de excedente y aviso de ingresos sin fuente
+- `TransactionPage` — pasa `stats` por fuente al manager
+- `IncomeSourcesManager` — badge de estado (Cobrado/Parcial/Pendiente) + línea "Cobrado $X de $Y" por fuente
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- Conversión provisional a USD con la última tasa BCV (`usd_bcv`; EUR vía `eur_bcv/usd_bcv`; USDT/USD 1:1) hasta que exista `financial_settings` con la referencia elegida
+- Regla de split uniforme: en cualquier fuente no-variable, lo recibido hasta `expected` es fijo y el excedente es variable
+- `budgetBase` = fijo esperado + promedio variable 3m (la regla configurable por usuario queda para `financial_settings`)
+- Alerta de cobro pendiente respeta `pay_day_of_month`: solo se muestra cuando el día ya pasó (meses pasados siempre alertan)
+- Agregada al plan: pregunta de onboarding "¿modo personal o finanzas compartidas del hogar?" con creación del espacio Hogar si aplica
+
+### Pendiente
+
+- Cobros de fuentes `custom` cuentan como 1× esperado al mes (simplificación documentada)
+- Desviación por cobro individual (hoy es agregada por fuente al mes)
+- Regla de base presupuestaria configurable (requiere UI de `financial_settings`)
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Ejecutar migración `20261118_01`** en Supabase y probar `/dashboard/accounts` (pendiente verificación manual)
-2. **Lógica de ingresos** — cobrado vs. esperado del periodo, split fijo/variable en mixtas, promedio móvil
-3. **Dashboard** — tarjeta de ingresos del mes (esperado vs. recibido, % fijo/variable) + alerta de cobro pendiente
-4. **Membresías de espacio** — invitar miembros al Hogar/Custodia con roles (`financial_space_members` ya tiene RLS)
-5. **Selector de espacio** en dashboard/transacciones + migración de wallets a espacios/cuentas
+1. **Membresías de espacio** — invitar miembros al Hogar/Custodia con roles (`financial_space_members` ya tiene RLS)
+2. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
+3. **Custodia Mami** — `custody_funds` + exclusión de reportes del hogar (ya tiene espacio tipo `custody`)
+4. **Deudas externas** — `liabilities` + `liability_payments`
+5. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
 
 ## Cómo retomar mañana
 

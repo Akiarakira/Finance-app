@@ -3,14 +3,18 @@ import { Wallet, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import { getMonthlySummary, listTransactions } from '@/lib/actions/transactions';
+import { getIncomePeriodSummary } from '@/lib/actions/income-summary';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [summaryResult, transactionsResult] = await Promise.all([
+  const [summaryResult, transactionsResult, incomeResult] = await Promise.all([
     getMonthlySummary(currentMonth),
     listTransactions(),
+    getIncomePeriodSummary(currentMonth),
   ]);
+
+  const incomeSummary = incomeResult.summary;
 
   // Traemos la última tasa de BCV
   const { data: rates } = await supabase
@@ -98,6 +102,60 @@ export default async function DashboardPage() {
           <p className="text-sm text-lime-600 mt-1">{binanceRates ? `Actualizado: ${new Date(binanceRates.created_at).toLocaleTimeString()}` : ''}</p>
         </div>
       </div>
+
+      {incomeSummary && (incomeSummary.bySource.length > 0 || incomeSummary.receivedTotal > 0) && (
+        <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="font-bold text-slate-800">Ingresos del mes</h3>
+            <Link href="/dashboard/income" className="text-sm font-medium text-blue-600 hover:underline">Ver ingresos</Link>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+              <p className="text-sm text-slate-500">Fijo recibido vs. esperado</p>
+              <p className="text-xl font-bold text-slate-800">
+                ${incomeSummary.fixedReceived.toFixed(2)} <span className="text-sm font-normal text-slate-400">de ${incomeSummary.expectedFixedTotal.toFixed(2)}</span>
+              </p>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-green-500"
+                  style={{ width: `${incomeSummary.expectedFixedTotal > 0 ? Math.min((incomeSummary.fixedReceived / incomeSummary.expectedFixedTotal) * 100, 100) : 0}%` }}
+                />
+              </div>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Estabilidad del mes</p>
+              <p className="text-xl font-bold text-slate-800">
+                {incomeSummary.stabilityRatio != null ? `${Math.round(incomeSummary.stabilityRatio * 100)}% fijo` : 'Sin datos'}
+              </p>
+              <p className="text-sm text-slate-500">Variable: ${incomeSummary.variableReceived.toFixed(2)} · Promedio 3m: ${incomeSummary.variableMonthlyAverage.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-sm text-slate-500">Base sugerida 50-30-20</p>
+              <p className="text-xl font-bold text-slate-800">${incomeSummary.budgetBase.toFixed(2)}</p>
+              <p className="text-sm text-slate-500">
+                ${(incomeSummary.budgetBase * 0.5).toFixed(2)} nec. · ${(incomeSummary.budgetBase * 0.3).toFixed(2)} deseos · ${(incomeSummary.budgetBase * 0.2).toFixed(2)} ahorro
+              </p>
+            </div>
+          </div>
+
+          {incomeSummary.pendingSources.length > 0 && (
+            <p className="mt-4 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
+              Cobros pendientes: {incomeSummary.pendingSources.map((stat) => `${stat.name} (faltan $${stat.pending.toFixed(2)}${stat.payDay != null ? `, día ${stat.payDay}` : ''})`).join(' · ')}
+            </p>
+          )}
+          {incomeSummary.surplusVariable > 0 && (
+            <p className="mt-4 rounded-lg bg-sky-50 p-3 text-sm text-sky-800">
+              Excedente variable de ${incomeSummary.surplusVariable.toFixed(2)} sobre tu promedio — candidato a ahorro o adelanto de deuda.
+            </p>
+          )}
+          {incomeSummary.unlinkedReceived > 0 && (
+            <p className="mt-4 rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
+              ${incomeSummary.unlinkedReceived.toFixed(2)} recibidos sin fuente asignada.
+            </p>
+          )}
+        </div>
+      )}
 
       <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
         <div className="mb-4 flex items-center justify-between gap-4">

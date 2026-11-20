@@ -13,6 +13,7 @@ import {
   type IncomeType,
 } from '@/lib/actions/income-sources';
 import type { Account } from '@/lib/actions/accounts';
+import type { SourcePeriodStat, SourcePeriodStatus } from '@/lib/actions/income-summary';
 
 const typeLabels: Record<IncomeType, string> = {
   fixed: 'Fijo',
@@ -31,6 +32,20 @@ const typeBadgeStyles: Record<IncomeType, string> = {
   fixed: 'bg-green-100 text-green-700',
   variable: 'bg-amber-100 text-amber-700',
   mixed: 'bg-sky-100 text-sky-700',
+};
+
+const statusLabels: Record<SourcePeriodStatus, string> = {
+  received: 'Cobrado',
+  partial: 'Parcial',
+  pending: 'Pendiente',
+  variable: 'Variable',
+};
+
+const statusBadgeStyles: Record<SourcePeriodStatus, string> = {
+  received: 'bg-green-100 text-green-700',
+  partial: 'bg-amber-100 text-amber-700',
+  pending: 'bg-red-100 text-red-700',
+  variable: 'bg-slate-100 text-slate-500',
 };
 
 interface SourceFormValues {
@@ -134,7 +149,7 @@ function SourceFormFields({ values, accounts, onChange }: { values: SourceFormVa
   );
 }
 
-export default function IncomeSourcesManager({ sources, accounts = [] }: { sources: IncomeSource[]; accounts?: Account[] }) {
+export default function IncomeSourcesManager({ sources, accounts = [], stats = {} }: { sources: IncomeSource[]; accounts?: Account[]; stats?: Record<string, SourcePeriodStat> }) {
   const [createForm, setCreateForm] = useState<SourceFormValues>(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<SourceFormValues>(emptyForm);
@@ -242,6 +257,11 @@ export default function IncomeSourcesManager({ sources, accounts = [] }: { sourc
                         {typeLabels[source.income_type]}
                       </span>
                       {!source.is_active && <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">Pausada</span>}
+                      {stats[source.id] && stats[source.id].incomeType !== 'variable' && (
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusBadgeStyles[stats[source.id].status]}`}>
+                          {statusLabels[stats[source.id].status]}
+                        </span>
+                      )}
                     </p>
                     <p className="text-sm text-slate-500">
                       {source.expected_amount_usd != null ? `Esperado: $${Number(source.expected_amount_usd).toFixed(2)}` : 'Sin monto esperado'}
@@ -250,6 +270,13 @@ export default function IncomeSourcesManager({ sources, accounts = [] }: { sourc
                       {source.pay_day_of_month != null && ` · día ${source.pay_day_of_month}`}
                       {source.destination_account_name && ` · Destino: ${source.destination_account_name}`}
                     </p>
+                    {stats[source.id] && (
+                      <p className="mt-1 text-xs font-medium text-slate-500">
+                        {stats[source.id].incomeType === 'variable'
+                          ? `Cobrado este mes: $${stats[source.id].received.toFixed(2)}`
+                          : `Cobrado: $${stats[source.id].received.toFixed(2)} de $${stats[source.id].expected.toFixed(2)} esperado`}
+                      </p>
+                    )}
                   </div>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => startEdit(source)} disabled={isPending} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-60">

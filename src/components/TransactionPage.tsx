@@ -2,6 +2,7 @@ import TransactionForm from '@/components/TransactionForm';
 import IncomeSourcesManager from '@/components/IncomeSourcesManager';
 import { listAccessibleWallets, listCategories, listTransactions, type TransactionType } from '@/lib/actions/transactions';
 import { listIncomeSources } from '@/lib/actions/income-sources';
+import { getIncomePeriodSummary, type SourcePeriodStat } from '@/lib/actions/income-summary';
 import { listAccounts } from '@/lib/actions/accounts';
 
 const paymentLabels: Record<string, string> = {
@@ -13,16 +14,20 @@ const paymentLabels: Record<string, string> = {
 
 export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
   const isIncome = type === 'income';
-  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult] = await Promise.all([
+  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult, incomeSummaryResult] = await Promise.all([
     listAccessibleWallets(),
     listCategories(),
     listTransactions(type),
     isIncome ? listIncomeSources(true) : Promise.resolve({ success: true as const, sources: [] }),
     listAccounts(),
+    isIncome ? getIncomePeriodSummary() : Promise.resolve({ success: true as const, summary: undefined }),
   ]);
   const transactions = transactionsResult.transactions ?? [];
   const incomeSources = incomeSourcesResult.sources ?? [];
   const accounts = accountsResult.accounts ?? [];
+  const statsBySource = Object.fromEntries(
+    (incomeSummaryResult.summary?.bySource ?? []).map((stat) => [stat.sourceId, stat]),
+  ) as Record<string, SourcePeriodStat>;
 
   return (
     <div className="space-y-6">
@@ -37,7 +42,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
         </div>
       )}
 
-      {isIncome && <IncomeSourcesManager sources={incomeSources} accounts={accounts} />}
+      {isIncome && <IncomeSourcesManager sources={incomeSources} accounts={accounts} stats={statsBySource} />}
 
       <TransactionForm
         type={type}

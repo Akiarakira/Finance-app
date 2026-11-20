@@ -598,6 +598,8 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Crear categorías de Ahorros.
 - [ ] Crear metas de ahorro sin imponer un monto objetivo fijo.
 - [ ] Mostrar una pantalla de configuración inicial al usuario nuevo.
+- [ ] Preguntar en la configuración inicial si la app se usará en modo personal o con finanzas compartidas del hogar.
+- [ ] Si se comparten: crear el espacio Hogar durante el setup y guiar la invitación de miembros.
 - [ ] Impedir duplicar cuentas/categorías al repetir el seeder.
 - [ ] No crear una deuda activa de Jhonny; conservarla solo como histórico opcional.
 - [ ] Permitir editar o descartar los datos iniciales antes de confirmar el setup.
@@ -680,13 +682,13 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Crear `src/lib/actions/income-sources.ts` con CRUD de fuentes.
 - [x] Vincular transacciones de ingreso a `income_source_id`.
 - [x] Validar `expected_amount_usd` obligatorio para fuentes fijas y mixtas.
-- [ ] Separar componente fijo y variable en cobros de fuentes mixtas.
-- [ ] Calcular ingreso fijo esperado vs. recibido del periodo.
-- [ ] Calcular promedio móvil de ingresos variables.
+- [x] Separar componente fijo y variable en cobros de fuentes mixtas.
+- [x] Calcular ingreso fijo esperado vs. recibido del periodo.
+- [x] Calcular promedio móvil de ingresos variables.
 - [ ] Calcular la base presupuestaria 50-30-20 según la regla elegida por el usuario.
-- [ ] Alertar cobros de ingreso fijo no recibidos al llegar su fecha esperada.
+- [x] Alertar cobros de ingreso fijo no recibidos al llegar su fecha esperada.
 - [ ] Detectar desviación de un cobro fijo contra su monto esperado.
-- [ ] Sugerir destino del excedente variable (ahorro o deuda) sin aplicarlo automáticamente.
+- [x] Sugerir destino del excedente variable (ahorro o deuda) sin aplicarlo automáticamente.
 
 ## Fase 4 — Interfaz de usuario
 
@@ -760,15 +762,15 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Saldos consolidados en la moneda de valoración seleccionada.
 - [ ] Separación visual entre hogar, custodia y pasivos.
 - [ ] Mostrar calidad/frescura de la tasa usada.
-- [ ] Tarjeta de ingresos del mes: esperado vs. recibido, % fijo vs. variable.
-- [ ] Alerta de cobro de ingreso fijo pendiente al llegar su fecha.
+- [x] Tarjeta de ingresos del mes: esperado vs. recibido, % fijo vs. variable.
+- [x] Alerta de cobro de ingreso fijo pendiente al llegar su fecha.
 
 ### Fuentes de ingreso
 
 - [x] Vista de fuentes activas con su clasificación fijo/variable/mixto.
 - [x] Crear fuente: nombre, tipo, monto esperado, componente variable, frecuencia, día de cobro y cuenta destino.
 - [x] Editar, pausar y archivar fuentes.
-- [ ] Mostrar cobrado vs. esperado del periodo por fuente.
+- [x] Mostrar cobrado vs. esperado del periodo por fuente.
 - [ ] Mostrar desviación de cada cobro contra lo esperado.
 - [ ] Configurar la regla de base presupuestaria (solo fijo / esperado / promedio).
 
