@@ -116,13 +116,37 @@
 - Desviación por cobro individual (hoy es agregada por fuente al mes)
 - Regla de base presupuestaria configurable (requiere UI de `financial_settings`)
 
+---
+
+## Sesión 2026-11-18 (cont. 2) — Slice 4: Membresías de espacio ✅
+
+### Qué se hizo
+
+**Código:**
+- `financial-spaces.ts` — nuevas acciones: `listSpaceMembers`, `searchUsersForSpaceAccess` (búsqueda en profiles excluyendo miembros), `addSpaceMember` (upsert, roles admin/editor/viewer), `updateSpaceMemberRole` (bloquea tocar al owner), `removeSpaceMember` (admin o salida propia); helper `getMySpaceRole` (miembro o dueño del espacio)
+- `src/components/SpaceMembersPanel.tsx` — nuevo: lista de miembros con rol, búsqueda+agregar con rol elegido, cambio de rol, quitar; `canManage` = owner/admin
+- `SpacesManager` — botón "Miembros" por espacio que expande el panel (carga lazy)
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅ · sin migración nueva (RLS ya existía desde `20261118_01`)
+
+### Decisiones tomadas
+
+- El rol `owner` no se asigna por invitación; solo el creador del espacio lo tiene
+- Miembros con cualquier rol pueden ver la lista; solo owner/admin gestionan
+- Un miembro puede salir de un espacio por sí mismo (RLS delete permite `user_id = auth.uid()`)
+
+### Pendiente de verificación manual (usuaria)
+
+- Crear espacio "Hogar", invitar al otro usuario por email/username y confirmar que ve el espacio y sus cuentas
+- Confirmar que un `viewer` no puede crear cuentas ni invitar (RLS editor+)
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Membresías de espacio** — invitar miembros al Hogar/Custodia con roles (`financial_space_members` ya tiene RLS)
-2. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
-3. **Custodia Mami** — `custody_funds` + exclusión de reportes del hogar (ya tiene espacio tipo `custody`)
-4. **Deudas externas** — `liabilities` + `liability_payments`
-5. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
+1. **Custodia Mami** — `custody_funds` + exclusión de reportes del hogar (ya tiene espacio tipo `custody`)
+2. **Deudas externas** — `liabilities` + `liability_payments`
+3. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
+4. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
+5. **Indicador compartido/privado** en movimientos (plan Fase 4)
 
 ## Cómo retomar mañana
 

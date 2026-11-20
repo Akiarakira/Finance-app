@@ -11,6 +11,7 @@ import {
   type FinancialSpaceType,
   type SpaceRole,
 } from '@/lib/actions/financial-spaces';
+import SpaceMembersPanel from '@/components/SpaceMembersPanel';
 
 const typeLabels: Record<FinancialSpaceType, string> = {
   personal: 'Personal',
@@ -39,6 +40,7 @@ export default function SpacesManager({ spaces }: { spaces: FinancialSpace[] }) 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editType, setEditType] = useState<FinancialSpaceType>('personal');
+  const [membersOpenId, setMembersOpenId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -172,6 +174,9 @@ export default function SpacesManager({ spaces }: { spaces: FinancialSpace[] }) 
                     </p>
                   </div>
                   <div className="flex gap-2">
+                    <button type="button" onClick={() => setMembersOpenId((current) => (current === space.id ? null : space.id))} disabled={isPending} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-60">
+                      {membersOpenId === space.id ? 'Ocultar miembros' : 'Miembros'}
+                    </button>
                     <button type="button" onClick={() => startEdit(space)} disabled={isPending} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-60">
                       Editar
                     </button>
@@ -183,6 +188,9 @@ export default function SpacesManager({ spaces }: { spaces: FinancialSpace[] }) 
                     </button>
                   </div>
                 </div>
+              )}
+              {membersOpenId === space.id && editingId !== space.id && (
+                <SpaceMembersPanel spaceId={space.id} canManage={space.my_role === 'owner' || space.my_role === 'admin'} />
               )}
             </div>
           ))}

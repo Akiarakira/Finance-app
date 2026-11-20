@@ -555,16 +555,16 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Convertir los scripts raíz en migraciones ordenadas.
 - [ ] Ejecutar la migración en Supabase.
 - [ ] Verificar que `accounts`, `custody_funds`, `liabilities`, `budget_categories`, `monthly_budgets` e `internal_transfers` existan.
-- [ ] Crear `financial_spaces` y `financial_space_members` para separar espacios personales, hogar y custodia.
-- [ ] Crear `financial_settings` para guardar la moneda de valoración y referencia cambiaria por usuario/espacio.
+- [x] Crear `financial_spaces` y `financial_space_members` para separar espacios personales, hogar y custodia.
+- [x] Crear `financial_settings` para guardar la moneda de valoración y referencia cambiaria por usuario/espacio.
 - [ ] Crear `savings_goals` y `savings_contributions`.
 - [ ] Crear `liability_payments` para el historial de pagos de cada deuda.
 - [x] Crear `income_sources` y `income_type_enum` para clasificar ingresos fijos, variables y mixtos.
 - [x] Agregar `income_source_id` a `transactions`.
 - [ ] Actualizar `src/types/database.ts` con tipos generados o interfaces para:
-  - [ ] `Account`.
-  - [ ] `FinancialSpace`.
-  - [ ] `FinancialSpaceMember`.
+  - [x] `Account`.
+  - [x] `FinancialSpace`.
+  - [x] `FinancialSpaceMember`.
   - [ ] `FinancialSettings`.
   - [ ] `CustodyFund`.
   - [ ] `Liability`.
@@ -573,18 +573,18 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
   - [ ] `MonthlyBudget`.
   - [ ] `SavingsGoal`.
   - [ ] `SavingsContribution`.
-  - [ ] `IncomeSource`.
+  - [x] `IncomeSource`.
   - [ ] `InternalTransfer`.
-  - [ ] `Transaction` extendida.
+  - [x] `Transaction` extendida.
 - [x] Mantener `tags` para etiquetas libres y usar `budget_categories` para categorías contables 50-30-20.
 - [ ] Resolver la compatibilidad entre `transactions.tag_id` y `budget_categories.category_id`.
-- [ ] Agregar `USDT` como moneda válida.
+- [x] Agregar `USDT` como moneda válida.
 - [ ] Permitir elegir la moneda de valoración `USD` o `USDT`.
 - [ ] Permitir elegir referencia `BCV USD`, `Binance/USDT`, `BCV EUR` o personalizada.
 - [ ] Definir preferencias por usuario y por espacio financiero.
 - [ ] Definir zona horaria oficial para cierres y fechas.
-- [ ] Crear RLS por espacio, membresía, cuenta y fondo de custodia.
-- [ ] Crear índices y policies RLS de las tablas nuevas.
+- [x] Crear RLS por espacio, membresía, cuenta y fondo de custodia.
+- [x] Crear índices y policies RLS de las tablas nuevas.
 
 ## Fase 2 — Seeder e inicialización
 
@@ -625,10 +625,10 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Saldos de cuentas
 
-- [ ] Crear acciones CRUD para cuentas.
-- [ ] Permitir archivar cuentas con historial.
-- [ ] Permitir eliminar cuentas que no tengan movimientos.
-- [ ] Impedir eliminar cuentas usadas por transferencias, transacciones o pagos.
+- [x] Crear acciones CRUD para cuentas.
+- [x] Permitir archivar cuentas con historial.
+- [x] Permitir eliminar cuentas que no tengan movimientos.
+- [x] Impedir eliminar cuentas usadas por transferencias, transacciones o pagos.
 - [ ] Actualizar el saldo `current_balance` de la cuenta de origen al registrar un gasto.
 - [ ] Actualizar el saldo de la cuenta de origen al registrar un ingreso.
 - [ ] Evitar doble actualización al reintentar una acción.
@@ -731,25 +731,25 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 ### Espacios compartidos y privacidad
 
 - [ ] Crear selector de espacio financiero.
-- [ ] Crear espacio personal por usuario.
-- [ ] Crear espacio común del hogar.
-- [ ] Invitar miembros al espacio del hogar.
-- [ ] Permitir roles owner/admin/editor/viewer.
-- [ ] Compartir únicamente cuentas/wallets seleccionadas.
-- [ ] Crear espacio o wallet de custodia para Mami.
-- [ ] Permitir que Mami administre su espacio sin ver cuentas personales.
+- [x] Crear espacio personal por usuario.
+- [x] Crear espacio común del hogar.
+- [x] Invitar miembros al espacio del hogar.
+- [x] Permitir roles owner/admin/editor/viewer.
+- [x] Compartir únicamente cuentas/wallets seleccionadas.
+- [x] Crear espacio o wallet de custodia para Mami.
+- [x] Permitir que Mami administre su espacio sin ver cuentas personales.
 - [ ] Mostrar claramente qué movimientos son compartidos y cuáles son privados.
 
 ### Cuentas financieras
 
-- [ ] Vista de cuentas activas.
-- [ ] Crear cuenta.
-- [ ] Editar cuenta.
-- [ ] Archivar cuenta.
-- [ ] Eliminar cuenta sin movimientos.
-- [ ] Mostrar saldo por moneda.
+- [x] Vista de cuentas activas.
+- [x] Crear cuenta.
+- [x] Editar cuenta.
+- [x] Archivar cuenta.
+- [x] Eliminar cuenta sin movimientos.
+- [x] Mostrar saldo por moneda.
 - [ ] Mostrar saldo convertido a la referencia elegida.
-- [ ] Mostrar institución/tipo y espacio al que pertenece.
+- [x] Mostrar institución/tipo y espacio al que pertenece.
 
 ### Dashboard principal
 
