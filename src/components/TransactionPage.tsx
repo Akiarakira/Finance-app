@@ -1,17 +1,11 @@
 import TransactionForm from '@/components/TransactionForm';
+import TransactionsList from '@/components/TransactionsList';
 import IncomeSourcesManager from '@/components/IncomeSourcesManager';
 import { listAccessibleWallets, listCategories, listTransactions, type TransactionType } from '@/lib/actions/transactions';
 import { listIncomeSources } from '@/lib/actions/income-sources';
 import { getIncomePeriodSummary, type SourcePeriodStat } from '@/lib/actions/income-summary';
 import { listAccounts } from '@/lib/actions/accounts';
 import { listCustodyFunds } from '@/lib/actions/custody-funds';
-
-const paymentLabels: Record<string, string> = {
-  binance: 'Binance / Pay',
-  bs: 'Bolívares',
-  cash_usd: 'Efectivo USD',
-  other: 'Otro',
-};
 
 export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
   const isIncome = type === 'income';
@@ -57,34 +51,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
         initialWalletId={initialWalletId}
       />
 
-      <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-        <h2 className="mb-4 font-bold text-slate-800">Movimientos recientes</h2>
-        {transactions.length === 0 ? (
-          <p className="py-8 text-center text-slate-400">Aún no hay movimientos registrados.</p>
-        ) : (
-          <div className="divide-y divide-slate-100">
-            {transactions.map((transaction) => (
-              <div key={transaction.id} className="flex flex-col gap-2 py-3 md:flex-row md:items-center md:justify-between">
-                <div>
-                  <p className="font-medium text-slate-800">{transaction.description || 'Movimiento sin descripción'}</p>
-                  <p className="text-sm text-slate-500">
-                    {transaction.category_name ?? 'Sin categoría'} · {paymentLabels[transaction.payment_method] ?? transaction.payment_method} · {transaction.transaction_date}
-                    {transaction.income_source_name && ` · Fuente: ${transaction.income_source_name}`}
-                    {transaction.account_name && ` · Cuenta: ${transaction.account_name}`}
-                    {transaction.custody_fund_name && ` · Custodia: ${transaction.custody_fund_name}`}
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}
-                  </p>
-                </div>
-                <span className={`font-semibold ${isIncome ? 'text-green-600' : 'text-slate-800'}`}>
-                  {isIncome ? '+' : '-'} {transaction.amount.toFixed(2)} {transaction.currency}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
+      <TransactionsList transactions={transactions} isIncome={isIncome} />
     </div>
   );
 }

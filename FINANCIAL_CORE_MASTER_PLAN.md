@@ -695,7 +695,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 ### Quick Capture
 
 - [ ] Crear formulario de captura rápida global.
-- [ ] Selector de espacio financiero: Personal, Hogar, Custodia u otro.
+- [x] Selector de espacio financiero: Personal, Hogar, Custodia u otro.
 - [ ] Campo Cuenta.
 - [ ] Campo Monto.
 - [ ] Campo Moneda: VES / USD / USDT / EUR.
@@ -738,7 +738,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Compartir únicamente cuentas/wallets seleccionadas.
 - [x] Crear espacio o wallet de custodia para Mami.
 - [x] Permitir que Mami administre su espacio sin ver cuentas personales.
-- [ ] Mostrar claramente qué movimientos son compartidos y cuáles son privados.
+- [x] Mostrar claramente qué movimientos son compartidos y cuáles son privados.
 
 ### Cuentas financieras
 

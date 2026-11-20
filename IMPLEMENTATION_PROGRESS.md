@@ -199,12 +199,34 @@
 - Crear deuda en `/dashboard/debts` → registrar pago → verificar que descuenta saldo, aparece en gastos y en historial
 - Pagar hasta agotar → verificar badge "Saldada" y que desaparece del dashboard
 
+## Sesión 2026-11-18 (cont. 5) — Slice 7: Selector de espacio en movimientos ✅
+
+### Qué se hizo
+
+**Código:**
+- `transactions.ts` — `space_id`/`space_name` en `TransactionRecord` (join `financial_spaces`)
+- `src/components/TransactionsList.tsx` — nuevo componente cliente: lista de movimientos con **filtro por espacio** (dropdown "Todos los espacios") y "Espacio: X" por movimiento
+- `TransactionPage` — usa `TransactionsList` (la lista ahora es client-side para filtrar sin recargar)
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅ · sin migración (space_id ya existía)
+
+### Decisión: relación wallets ↔ espacios/cuentas
+
+- **Wallet** = "caja" física del movimiento (efectivo/Binance/Bs), dueña del registro y ámbito de la RLS actual (`wallet_id` NOT NULL + permisos por wallet)
+- **Cuenta** = cuenta financiera dentro de un espacio (ledger por espacio)
+- Un movimiento puede llevar ambos: wallet = de dónde salió el dinero físicamente, cuenta = en qué ledger financiero se contabiliza, space = heredado de cuenta/fondo/deuda
+- El plan prevé fusionar wallets → accounts a futuro; hasta entonces conviven con los roles de arriba. Documentado aquí para no rediscutirlo
+
+### Pendiente de verificación manual (usuaria)
+
+- En Ingresos/Gastos, el dropdown de espacio filtra la lista; movimientos sin espacio (legacy) solo aparecen en "Todos los espacios"
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
-2. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
-3. **Indicador compartido/privado** en movimientos (plan Fase 4)
-4. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets`
+1. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
+2. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets`
+3. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
+4. **Metas de ahorro** — `savings_goals` + `savings_contributions`
 
 ## Cómo retomar mañana
 
