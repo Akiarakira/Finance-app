@@ -11,7 +11,8 @@ import {
   ArrowRightLeft,
   FileText,
   CreditCard,
-  PieChart
+  PieChart,
+  Target
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import LogoutButton from './LogoutButton';
@@ -22,6 +23,7 @@ const menuItems = [
   { icon: Landmark, label: 'Cuentas', href: '/dashboard/accounts' },
   { icon: CreditCard, label: 'Deudas', href: '/dashboard/debts' },
   { icon: PieChart, label: 'Presupuesto', href: '/dashboard/budget' },
+  { icon: Target, label: 'Metas', href: '/dashboard/goals' },
   { icon: ArrowUpRight, label: 'Ingresos', href: '/dashboard/income' },
   { icon: ArrowDownLeft, label: 'Gastos', href: '/dashboard/expenses' },
   { icon: Users, label: 'Compartidos', href: '/dashboard/shared' },

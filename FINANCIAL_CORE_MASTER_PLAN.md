@@ -557,7 +557,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Verificar que `accounts`, `custody_funds`, `liabilities`, `budget_categories`, `monthly_budgets` e `internal_transfers` existan.
 - [x] Crear `financial_spaces` y `financial_space_members` para separar espacios personales, hogar y custodia.
 - [x] Crear `financial_settings` para guardar la moneda de valoración y referencia cambiaria por usuario/espacio.
-- [ ] Crear `savings_goals` y `savings_contributions`.
+- [x] Crear `savings_goals` y `savings_contributions`.
 - [x] Crear `liability_payments` para el historial de pagos de cada deuda.
 - [x] Crear `income_sources` y `income_type_enum` para clasificar ingresos fijos, variables y mixtos.
 - [x] Agregar `income_source_id` a `transactions`.
@@ -669,11 +669,11 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Metas de ahorro
 
-- [ ] Crear acciones CRUD para metas.
-- [ ] Registrar aportes vinculados a una cuenta.
-- [ ] Actualizar progreso y saldo acumulado.
-- [ ] Calcular monto faltante.
-- [ ] Calcular aporte recomendado mensual y quincenal.
+- [x] Crear acciones CRUD para metas.
+- [x] Registrar aportes vinculados a una cuenta.
+- [x] Actualizar progreso y saldo acumulado.
+- [x] Calcular monto faltante.
+- [x] Calcular aporte recomendado mensual y quincenal.
 - [ ] Calcular fecha proyectada de cumplimiento.
 - [ ] Mostrar desviación entre ahorro esperado y real.
 
@@ -776,14 +776,14 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Metas de ahorro
 
-- [ ] Vista de metas activas.
-- [ ] Crear meta.
-- [ ] Editar meta.
-- [ ] Pausar/completar meta.
-- [ ] Registrar aporte.
-- [ ] Barra de progreso.
-- [ ] Monto faltante.
-- [ ] Aporte mensual sugerido.
+- [x] Vista de metas activas.
+- [x] Crear meta.
+- [x] Editar meta.
+- [x] Pausar/completar meta.
+- [x] Registrar aporte.
+- [x] Barra de progreso.
+- [x] Monto faltante.
+- [x] Aporte mensual sugerido.
 - [ ] Aporte quincenal sugerido.
 - [ ] Fecha proyectada.
 
@@ -886,7 +886,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Una compra de Mami descuenta custodia y cuenta de salida.
 - [x] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.
 - [x] Una deuda saldada deja de aparecer como obligación activa.
-- [ ] Una meta de ahorro muestra monto faltante, progreso y aporte sugerido.
+- [x] Una meta de ahorro muestra monto faltante, progreso y aporte sugerido.
 - [x] Una transferencia Binance → BNC no aparece como ingreso ni gasto.
 - [ ] Los balances consolidados no suman monedas sin convertir.
 - [ ] Una cuenta puede archivarse sin destruir su historial.

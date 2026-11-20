@@ -295,11 +295,35 @@
 - En `/dashboard/accounts` registrar 100 USDT → 31.000 VES entre dos cuentas → verificar saldos ajustados y tasa 310
 - Verificar que NO aparece en ingresos/gastos ni en resumen mensual
 
+## Sesión 2026-11-18 (cont. 9) — Slice 11: Metas de ahorro ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_07_savings_goals.sql` — `savings_goals` (objetivo, fecha, frecuencia, aporte propuesto, status active/paused/completed) + `savings_contributions` (meta, cuenta opcional, transaction_id, monto, fecha), `transactions.savings_goal_id`, RLS por espacio.
+
+**Código:**
+- `src/lib/actions/savings-goals.ts` — CRUD + `recordSavingsContribution` (crea movimiento expense con `savings_goal_id` + `account_id` opcional, inserta aporte, suma `current_amount_usd`, marca `completed` al llegar al objetivo; solo metas activas), `listSavingsContributions`
+- `/dashboard/goals` + `GoalsManager` — crear, editar, barra+%+monto faltante, **aporte sugerido** (propuesto o faltante÷meses a la fecha), "Aportar" (wallet requerida + cuenta opcional), pausar/reanudar, historial lazy, eliminar
+- Sidebar — entrada "Metas"
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- El aporte crea un expense con `savings_goal_id` (misma mecánica que pagos de deuda: wallet de salida requerida, cuenta opcional). Cuenta como gasto en el resumen mensual por ahora — separarlo como "ahorro" vs. consumo queda para Fase 5 (el `savings_goal_id` ya lo permite)
+- Completada automática al alcanzar el objetivo (no hay confirmación de sobrepaso)
+- Pendientes del plan: fecha proyectada de cumplimiento, desviación esperado vs. real, aporte quincenal
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_07_savings_goals.sql` en SQL Editor
+- Crear meta en `/dashboard/goals` → aportar → verificar progreso, descuento de wallet y badge "Completada" al llegar
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Metas de ahorro** — `savings_goals` + `savings_contributions`
-2. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
-3. **Onboarding** — pregunta "¿solo o finanzas compartidas en casa?" (ya en el plan)
+1. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
+2. **Onboarding** — pregunta "¿solo o finanzas compartidas en casa?" (ya en el plan)
+3. **Reportes Fase 5** — `amount_usd`, separación deuda/ahorro/custodia vs. gasto ordinario
 
 ## Cómo retomar mañana
 
