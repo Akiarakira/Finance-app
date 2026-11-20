@@ -6,10 +6,11 @@ import { listIncomeSources } from '@/lib/actions/income-sources';
 import { getIncomePeriodSummary, type SourcePeriodStat } from '@/lib/actions/income-summary';
 import { listAccounts } from '@/lib/actions/accounts';
 import { listCustodyFunds } from '@/lib/actions/custody-funds';
+import { listBudgetCategories } from '@/lib/actions/budget';
 
 export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
   const isIncome = type === 'income';
-  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult, incomeSummaryResult, custodyFundsResult] = await Promise.all([
+  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult, incomeSummaryResult, custodyFundsResult, budgetCategoriesResult] = await Promise.all([
     listAccessibleWallets(),
     listCategories(),
     listTransactions(type),
@@ -17,11 +18,13 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
     listAccounts(),
     isIncome ? getIncomePeriodSummary() : Promise.resolve({ success: true as const, summary: undefined }),
     listCustodyFunds(),
+    isIncome ? Promise.resolve({ success: true as const, categories: [] }) : listBudgetCategories(),
   ]);
   const transactions = transactionsResult.transactions ?? [];
   const incomeSources = incomeSourcesResult.sources ?? [];
   const accounts = accountsResult.accounts ?? [];
   const custodyFunds = custodyFundsResult.funds ?? [];
+  const budgetCategories = budgetCategoriesResult.categories ?? [];
   const statsBySource = Object.fromEntries(
     (incomeSummaryResult.summary?.bySource ?? []).map((stat) => [stat.sourceId, stat]),
   ) as Record<string, SourcePeriodStat>;
@@ -48,6 +51,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
         incomeSources={incomeSources.filter((source) => source.is_active)}
         accounts={accounts}
         custodyFunds={custodyFunds}
+        budgetCategories={budgetCategories}
         initialWalletId={initialWalletId}
       />
 

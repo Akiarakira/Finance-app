@@ -244,12 +244,38 @@
 - Ejecutar `supabase/migrations/20261118_04_settings_budget_rule.sql` en SQL Editor
 - En `/dashboard/settings` cambiar la regla a "Solo fijo" → verificar que "Base sugerida" en la tarjeta de ingresos baja
 
+## Sesión 2026-11-18 (cont. 7) — Slice 9: Presupuesto 50-30-20 ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_05_budget.sql` — enum `budget_pillar_enum` (needs/wants/savings), `budget_categories`, `monthly_budgets` (UNIQUE user+categoría+mes), `transactions.budget_category_id`, RLS por espacio.
+
+**Código:**
+- `src/lib/actions/budget.ts` — CRUD de categorías (guardia de movimientos), `upsertMonthlyBudget`, `getBudgetSummary(month)` → por pilar {target = budgetBase × 50/30/20, assigned, gastado} y por categoría {assigned, gastado}; `PILLAR_LABELS` compartido
+- `/dashboard/budget` + `BudgetManager` — 3 tarjetas por pilar (gastado vs. asignado vs. objetivo, barra roja si excede), categorías con asignación mensual inline, crear/editar/eliminar
+- `TransactionForm` — selector "Categoría de presupuesto" (solo gastos); `TransactionsList` muestra "Presupuesto: X"
+- Sidebar — entrada "Presupuesto"; dashboard — sección "Presupuesto del mes" con barras por pilar
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- `transactions.budget_category_id` como columna aparte de `tag_id` (separación semántica tags libres vs. categorías contables — la opción que el plan ya había elegido)
+- Gastado por pilar = gastos del mes con `budget_category_id`, excluidos de custodia implícitamente solo si no llevan categoría — **pendiente**: un gasto con custodia+categoría sumaría al pilar; decidir si se excluye
+- Asignación mensual por categoría con upsert; el target del pilar usa `budgetBase` (regla configurable)
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_05_budget.sql` en SQL Editor
+- En `/dashboard/budget` crear categorías (ej. Mercado→needs, Salidas→wants, Ahorro→savings), asignar montos
+- Registrar un gasto con categoría → verificar que sube "gastado" en el pilar y en el dashboard
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets` (usa la `budgetBase` ya calculada)
-2. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
-3. **Metas de ahorro** — `savings_goals` + `savings_contributions`
-4. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
+1. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
+2. **Metas de ahorro** — `savings_goals` + `savings_contributions`
+3. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
+4. **Onboarding** — pregunta "¿solo o finanzas compartidas en casa?" (ya en el plan)
 
 ## Cómo retomar mañana
 

@@ -6,21 +6,24 @@ import { getMonthlySummary, listTransactions } from '@/lib/actions/transactions'
 import { getIncomePeriodSummary } from '@/lib/actions/income-summary';
 import { listCustodyFunds } from '@/lib/actions/custody-funds';
 import { listLiabilities } from '@/lib/actions/liabilities';
+import { getBudgetSummary, PILLAR_LABELS } from '@/lib/actions/budget';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [summaryResult, transactionsResult, incomeResult, fundsResult, liabilitiesResult] = await Promise.all([
+  const [summaryResult, transactionsResult, incomeResult, fundsResult, liabilitiesResult, budgetResult] = await Promise.all([
     getMonthlySummary(currentMonth),
     listTransactions(),
     getIncomePeriodSummary(currentMonth),
     listCustodyFunds(),
     listLiabilities(),
+    getBudgetSummary(currentMonth),
   ]);
 
   const incomeSummary = incomeResult.summary;
   const custodyFunds = fundsResult.funds ?? [];
   const liabilities = liabilitiesResult.liabilities ?? [];
+  const budgetSummary = budgetResult.summary;
 
   const custodyMovements = custodyFunds.length > 0
     ? await supabase
@@ -192,6 +195,37 @@ export default async function DashboardPage() {
                 <p className="text-xs text-slate-400">Disponible · {fund.space_name ?? 'Sin espacio'}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {budgetSummary && budgetSummary.categories.length > 0 && (
+        <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="font-bold text-slate-800">Presupuesto del mes</h3>
+            <Link href="/dashboard/budget" className="text-sm font-medium text-blue-600 hover:underline">Administrar</Link>
+          </div>
+          <div className="space-y-4">
+            {(['needs', 'wants', 'savings'] as const).map((pillar) => {
+              const data = budgetSummary.pillars[pillar];
+              const labels = PILLAR_LABELS[pillar];
+              const spentPct = data.assigned > 0 ? Math.min(100, (data.spent / data.assigned) * 100) : 0;
+              const overBudget = data.assigned > 0 && data.spent > data.assigned;
+              return (
+                <div key={pillar}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className={`font-medium ${labels.color}`}>{labels.name} ({labels.pct})</span>
+                    <span className="text-slate-500">
+                      ${data.spent.toFixed(2)} / ${data.assigned.toFixed(2)}
+                      <span className="text-xs text-slate-400"> · objetivo ${data.target.toFixed(2)}</span>
+                    </span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                    <div className={`h-full rounded-full ${overBudget ? 'bg-red-500' : pillar === 'needs' ? 'bg-sky-500' : pillar === 'wants' ? 'bg-violet-500' : 'bg-emerald-500'}`} style={{ width: `${spentPct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

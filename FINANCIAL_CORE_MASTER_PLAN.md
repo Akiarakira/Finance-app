@@ -577,7 +577,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
   - [ ] `InternalTransfer`.
   - [x] `Transaction` extendida.
 - [x] Mantener `tags` para etiquetas libres y usar `budget_categories` para categorías contables 50-30-20.
-- [ ] Resolver la compatibilidad entre `transactions.tag_id` y `budget_categories.category_id`.
+- [x] Resolver la compatibilidad entre `transactions.tag_id` y `budget_categories.category_id`.
 - [x] Agregar `USDT` como moneda válida.
 - [x] Permitir elegir la moneda de valoración `USD` o `USDT`.
 - [x] Permitir elegir referencia `BCV USD`, `Binance/USDT`, `BCV EUR` o personalizada.
@@ -685,7 +685,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Separar componente fijo y variable en cobros de fuentes mixtas.
 - [x] Calcular ingreso fijo esperado vs. recibido del periodo.
 - [x] Calcular promedio móvil de ingresos variables.
-- [ ] Calcular la base presupuestaria 50-30-20 según la regla elegida por el usuario.
+- [x] Calcular la base presupuestaria 50-30-20 según la regla elegida por el usuario.
 - [x] Alertar cobros de ingreso fijo no recibidos al llegar su fecha esperada.
 - [ ] Detectar desviación de un cobro fijo contra su monto esperado.
 - [x] Sugerir destino del excedente variable (ahorro o deuda) sin aplicarlo automáticamente.
@@ -713,7 +713,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Selector de fuente de ingreso cuando el tipo es ingreso.
 - [x] Indicador del tipo de fuente (fijo/variable/mixto) y su monto esperado.
 - [ ] Para fuentes mixtas, separación opcional del cobro en parte fija y variable.
-- [ ] Selección de categoría 50-30-20.
+- [x] Selección de categoría 50-30-20.
 - [ ] Validar cuenta, moneda y destino antes de guardar.
 
 ### Transferencia P2P / traspaso
@@ -754,7 +754,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 ### Dashboard principal
 
 - [ ] Mostrar referencia cambiaria activa del usuario/espacio.
-- [ ] Barras de progreso de Necesidades, Deseos y Ahorros.
+- [x] Barras de progreso de Necesidades, Deseos y Ahorros.
 - [x] Tarjeta independiente `Fondo Mami`.
 - [x] Tarjetas para todas las deudas activas.
 - [ ] Alerta de próxima quincena/vencimiento.
@@ -878,10 +878,10 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Un ingreso en USD o USDT conserva moneda original y valor USD.
 - [ ] Un ingreso puede clasificarse como fijo, variable o mixto a través de su fuente.
 - [ ] Un cobro de fuente mixta separa su componente fijo del variable en reportes.
-- [ ] El presupuesto 50-30-20 puede calcularse solo sobre el ingreso fijo garantizado.
+- [x] El presupuesto 50-30-20 puede calcularse solo sobre el ingreso fijo garantizado.
 - [ ] El usuario ve el ingreso fijo esperado aún no cobrado en el periodo.
 - [ ] El excedente variable se reporta aparte y no se compromete automáticamente.
-- [ ] Un gasto de hogar afecta presupuesto y cuenta financiera.
+- [x] Un gasto de hogar afecta presupuesto y cuenta financiera.
 - [x] Un depósito de Mami no afecta ingresos ni presupuesto del hogar.
 - [x] Una compra de Mami descuenta custodia y cuenta de salida.
 - [x] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.

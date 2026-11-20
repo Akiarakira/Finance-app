@@ -38,6 +38,8 @@ export interface TransactionRecord {
   custody_fund_name: string | null;
   space_id: string | null;
   space_name: string | null;
+  budget_category_id: string | null;
+  budget_category_name: string | null;
 }
 
 export interface TransactionInput {
@@ -46,6 +48,7 @@ export interface TransactionInput {
   incomeSourceId?: string | null;
   accountId?: string | null;
   custodyFundId?: string | null;
+  budgetCategoryId?: string | null;
   type: TransactionType;
   amount: number;
   currency: Currency;
@@ -177,6 +180,7 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
         account_id: input.accountId || null,
         space_id: accountSpaceId,
         custody_fund_id: input.custodyFundId || null,
+        budget_category_id: input.type === 'expense' ? input.budgetCategoryId || null : null,
         type: input.type,
         amount: input.amount,
         currency: input.currency,
@@ -204,7 +208,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const supabase = await createClient();
     let query = supabase
       .from('transactions')
-      .select('id, wallet_id, created_by, tag_id, income_source_id, account_id, custody_fund_id, space_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name), account:accounts(name), custody_fund:custody_funds(beneficiary_name), space:financial_spaces(name)')
+      .select('id, wallet_id, created_by, tag_id, income_source_id, account_id, custody_fund_id, space_id, budget_category_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name), account:accounts(name), custody_fund:custody_funds(beneficiary_name), space:financial_spaces(name), budget_category:budget_categories(name)')
       .order('transaction_date', { ascending: false })
       .limit(50);
 
@@ -224,6 +228,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
       const account = Array.isArray(item.account) ? item.account[0] : item.account;
       const custodyFund = Array.isArray(item.custody_fund) ? item.custody_fund[0] : item.custody_fund;
       const space = Array.isArray(item.space) ? item.space[0] : item.space;
+      const budgetCategory = Array.isArray(item.budget_category) ? item.budget_category[0] : item.budget_category;
       const creator = creatorsMap.get(item.created_by);
       return {
         ...item,
@@ -233,6 +238,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
         account_name: account?.name ?? null,
         custody_fund_name: custodyFund?.beneficiary_name ?? null,
         space_name: space?.name ?? null,
+        budget_category_name: budgetCategory?.name ?? null,
         created_by_name: creator?.full_name || creator?.username || null,
         created_by_email: creator?.email ?? null,
       } as TransactionRecord;

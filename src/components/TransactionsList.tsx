@@ -48,6 +48,7 @@ export default function TransactionsList({ transactions, isIncome }: { transacti
                   {transaction.income_source_name && ` · Fuente: ${transaction.income_source_name}`}
                   {transaction.account_name && ` · Cuenta: ${transaction.account_name}`}
                   {transaction.custody_fund_name && ` · Custodia: ${transaction.custody_fund_name}`}
+                  {transaction.budget_category_name && ` · Presupuesto: ${transaction.budget_category_name}`}
                 </p>
                 <p className="text-xs text-slate-400">
                   Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}

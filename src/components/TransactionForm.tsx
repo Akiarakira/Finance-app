@@ -6,6 +6,7 @@ import { createTransaction, type CategoryOption, type Currency, type PaymentMeth
 import type { IncomeSource } from '@/lib/actions/income-sources';
 import type { Account } from '@/lib/actions/accounts';
 import type { CustodyFund } from '@/lib/actions/custody-funds';
+import type { BudgetCategory } from '@/lib/actions/budget';
 
 interface TransactionFormProps {
   type: TransactionType;
@@ -14,6 +15,7 @@ interface TransactionFormProps {
   incomeSources?: IncomeSource[];
   accounts?: Account[];
   custodyFunds?: CustodyFund[];
+  budgetCategories?: BudgetCategory[];
   initialWalletId?: string;
 }
 
@@ -23,7 +25,7 @@ const incomeTypeLabels: Record<IncomeSource['income_type'], string> = {
   mixed: 'Mixto',
 };
 
-export default function TransactionForm({ type, wallets, categories, incomeSources = [], accounts = [], custodyFunds = [], initialWalletId }: TransactionFormProps) {
+export default function TransactionForm({ type, wallets, categories, incomeSources = [], accounts = [], custodyFunds = [], budgetCategories = [], initialWalletId }: TransactionFormProps) {
   const selectedWalletId = initialWalletId && wallets.some((wallet) => wallet.id === initialWalletId)
     ? initialWalletId
     : wallets[0]?.id ?? '';
@@ -32,6 +34,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
   const [incomeSourceId, setIncomeSourceId] = useState('');
   const [accountId, setAccountId] = useState('');
   const [custodyFundId, setCustodyFundId] = useState('');
+  const [budgetCategoryId, setBudgetCategoryId] = useState('');
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('other');
@@ -55,6 +58,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
         incomeSourceId: incomeSourceId || null,
         accountId: accountId || null,
         custodyFundId: custodyFundId || null,
+        budgetCategoryId: budgetCategoryId || null,
         type,
         amount: Number(amount),
         currency,
@@ -118,6 +122,17 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
                 <option key={account.id} value={account.id}>
                   {account.name} · {account.currency}
                 </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {!isIncome && budgetCategories.length > 0 && (
+          <label className="text-sm font-medium text-slate-700">
+            Categoría de presupuesto
+            <select value={budgetCategoryId} onChange={(event) => setBudgetCategoryId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">
+              <option value="">Sin asignar</option>
+              {budgetCategories.map((category) => (
+                <option key={category.id} value={category.id}>{category.name}</option>
               ))}
             </select>
           </label>

@@ -10,7 +10,8 @@ import {
   FolderKanban,
   ArrowRightLeft,
   FileText,
-  CreditCard
+  CreditCard,
+  PieChart
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase';
 import LogoutButton from './LogoutButton';
@@ -20,6 +21,7 @@ const menuItems = [
   { icon: Wallet, label: 'Mis Cajas', href: '/dashboard/wallets' },
   { icon: Landmark, label: 'Cuentas', href: '/dashboard/accounts' },
   { icon: CreditCard, label: 'Deudas', href: '/dashboard/debts' },
+  { icon: PieChart, label: 'Presupuesto', href: '/dashboard/budget' },
   { icon: ArrowUpRight, label: 'Ingresos', href: '/dashboard/income' },
   { icon: ArrowDownLeft, label: 'Gastos', href: '/dashboard/expenses' },
   { icon: Users, label: 'Compartidos', href: '/dashboard/shared' },
