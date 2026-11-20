@@ -2,17 +2,20 @@ import { createClient } from '@/lib/supabase';
 import { getOrCreatePersonalSpace, listFinancialSpaces } from '@/lib/actions/financial-spaces';
 import { listAccounts } from '@/lib/actions/accounts';
 import { listCustodyFunds } from '@/lib/actions/custody-funds';
+import { listInternalTransfers } from '@/lib/actions/transfers';
 import SpacesManager from '@/components/SpacesManager';
 import AccountsManager from '@/components/AccountsManager';
 import CustodyFundsManager from '@/components/CustodyFundsManager';
+import TransfersManager from '@/components/TransfersManager';
 
 export default async function AccountsPage() {
   await getOrCreatePersonalSpace();
 
-  const [spacesResult, accountsResult, fundsResult] = await Promise.all([
+  const [spacesResult, accountsResult, fundsResult, transfersResult] = await Promise.all([
     listFinancialSpaces(),
     listAccounts(true),
     listCustodyFunds(),
+    listInternalTransfers(),
   ]);
 
   const spaces = spacesResult.spaces ?? [];
@@ -59,6 +62,20 @@ export default async function AccountsPage() {
     balance: fundBalances.get(fund.id) ?? fund.current_balance_usd,
   }));
 
+  // Las transferencias internas también mueven el saldo de las cuentas:
+  // restan en origen y suman en destino (en la moneda de cada cuenta).
+  for (const transfer of transfersResult.transfers ?? []) {
+    const sourceCurrent = balances.get(transfer.source_account_id);
+    if (sourceCurrent !== undefined) balances.set(transfer.source_account_id, sourceCurrent - transfer.source_amount);
+    const destCurrent = balances.get(transfer.destination_account_id);
+    if (destCurrent !== undefined) balances.set(transfer.destination_account_id, destCurrent + transfer.destination_amount);
+  }
+
+  const accountsWithTransfersBalance = accountsWithBalance.map((account) => ({
+    ...account,
+    balance: balances.get(account.id) ?? account.balance,
+  }));
+
   return (
     <div className="space-y-6">
       <div>
@@ -66,15 +83,16 @@ export default async function AccountsPage() {
         <p className="text-slate-500">Organiza tu dinero por espacio financiero y administra tus cuentas.</p>
       </div>
 
-      {(spacesResult.error || accountsResult.error || fundsResult.error) && (
+      {(spacesResult.error || accountsResult.error || fundsResult.error || transfersResult.error) && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {spacesResult.error ?? accountsResult.error ?? fundsResult.error}
+          {spacesResult.error ?? accountsResult.error ?? fundsResult.error ?? transfersResult.error}
         </div>
       )}
 
       <SpacesManager spaces={spaces} />
-      <AccountsManager accounts={accountsWithBalance} spaces={spaces} />
+      <AccountsManager accounts={accountsWithTransfersBalance} spaces={spaces} />
       <CustodyFundsManager funds={fundsWithBalance} spaces={spaces} />
+      <TransfersManager transfers={transfersResult.transfers ?? []} accounts={accounts.filter((account) => account.is_active)} />
     </div>
   );
 }

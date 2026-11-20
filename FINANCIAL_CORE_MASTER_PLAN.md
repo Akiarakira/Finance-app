@@ -657,13 +657,13 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Transferencias internas
 
-- [ ] Crear `src/lib/actions/transfers.ts`.
-- [ ] Implementar `createInternalTransfer`.
-- [ ] Descontar de la cuenta origen.
-- [ ] Sumar a la cuenta destino.
-- [ ] Guardar importes y monedas de ambos lados.
-- [ ] Guardar tasa resultante.
-- [ ] Excluir la transferencia de ingresos/gastos.
+- [x] Crear `src/lib/actions/transfers.ts`.
+- [x] Implementar `createInternalTransfer`.
+- [x] Descontar de la cuenta origen.
+- [x] Sumar a la cuenta destino.
+- [x] Guardar importes y monedas de ambos lados.
+- [x] Guardar tasa resultante.
+- [x] Excluir la transferencia de ingresos/gastos.
 - [ ] Validar idempotencia.
 - [ ] Implementar reversión o corrección controlada.
 
@@ -887,7 +887,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.
 - [x] Una deuda saldada deja de aparecer como obligación activa.
 - [ ] Una meta de ahorro muestra monto faltante, progreso y aporte sugerido.
-- [ ] Una transferencia Binance → BNC no aparece como ingreso ni gasto.
+- [x] Una transferencia Binance → BNC no aparece como ingreso ni gasto.
 - [ ] Los balances consolidados no suman monedas sin convertir.
 - [ ] Una cuenta puede archivarse sin destruir su historial.
 - [ ] Una wallet compartida permite colaboración sin exponer cuentas personales.

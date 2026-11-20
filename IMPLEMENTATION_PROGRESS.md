@@ -270,12 +270,36 @@
 - En `/dashboard/budget` crear categorías (ej. Mercado→needs, Salidas→wants, Ahorro→savings), asignar montos
 - Registrar un gasto con categoría → verificar que sube "gastado" en el pilar y en el dashboard
 
+## Sesión 2026-11-18 (cont. 8) — Slice 10: Transferencias internas ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_06_internal_transfers.sql` — tabla `internal_transfers` (origen/destino con CHECK ≠ misma cuenta, montos+monedas de ambos lados, `exchange_rate`, CHECK de monedas USD/USDT/VES/EUR), RLS por espacio.
+
+**Código:**
+- `src/lib/actions/transfers.ts` — `createInternalTransfer` (valida cuentas distintas, espacio heredado de la cuenta origen, tasa = destino/origen), `listInternalTransfers` (join nombres de cuentas vía doble FK), `deleteInternalTransfer`
+- `TransfersManager` + sección en `/dashboard/accounts` — formulario origen/destino con montos y monedas de ambos lados, lista con tasa resultante, eliminar
+- Saldo de cuentas = inicial + movimientos **+ transferencias** (resta origen, suma destino)
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- Las transferencias NO tocan `transactions` — no pueden contar como ingreso/gasto por diseño (el plan pide reporte separado de ellas)
+- Simplificación: el monto origen se resta en la moneda de la cuenta origen y el destino suma en la suya (se asume que coinciden con la moneda declarada en la cuenta)
+- `space_id` = el de la cuenta origen; una transferencia entre espacios distintos se registra en el espacio origen (pendiente: validar o restringir cross-space)
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_06_internal_transfers.sql` en SQL Editor
+- En `/dashboard/accounts` registrar 100 USDT → 31.000 VES entre dos cuentas → verificar saldos ajustados y tasa 310
+- Verificar que NO aparece en ingresos/gastos ni en resumen mensual
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
-2. **Metas de ahorro** — `savings_goals` + `savings_contributions`
-3. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
-4. **Onboarding** — pregunta "¿solo o finanzas compartidas en casa?" (ya en el plan)
+1. **Metas de ahorro** — `savings_goals` + `savings_contributions`
+2. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
+3. **Onboarding** — pregunta "¿solo o finanzas compartidas en casa?" (ya en el plan)
 
 ## Cómo retomar mañana
 
