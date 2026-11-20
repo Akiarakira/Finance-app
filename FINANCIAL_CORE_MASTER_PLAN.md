@@ -579,10 +579,10 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Mantener `tags` para etiquetas libres y usar `budget_categories` para categorías contables 50-30-20.
 - [ ] Resolver la compatibilidad entre `transactions.tag_id` y `budget_categories.category_id`.
 - [x] Agregar `USDT` como moneda válida.
-- [ ] Permitir elegir la moneda de valoración `USD` o `USDT`.
-- [ ] Permitir elegir referencia `BCV USD`, `Binance/USDT`, `BCV EUR` o personalizada.
-- [ ] Definir preferencias por usuario y por espacio financiero.
-- [ ] Definir zona horaria oficial para cierres y fechas.
+- [x] Permitir elegir la moneda de valoración `USD` o `USDT`.
+- [x] Permitir elegir referencia `BCV USD`, `Binance/USDT`, `BCV EUR` o personalizada.
+- [x] Definir preferencias por usuario y por espacio financiero.
+- [x] Definir zona horaria oficial para cierres y fechas.
 - [x] Crear RLS por espacio, membresía, cuenta y fondo de custodia.
 - [x] Crear índices y policies RLS de las tablas nuevas.
 
@@ -772,7 +772,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Editar, pausar y archivar fuentes.
 - [x] Mostrar cobrado vs. esperado del periodo por fuente.
 - [ ] Mostrar desviación de cada cobro contra lo esperado.
-- [ ] Configurar la regla de base presupuestaria (solo fijo / esperado / promedio).
+- [x] Configurar la regla de base presupuestaria (solo fijo / esperado / promedio).
 
 ### Metas de ahorro
 
@@ -860,7 +860,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Separar identidad, espacios, membresías y datos financieros.
 - [ ] Eliminar supuestos hardcodeados de Andreina, Jesús, Mami y Jhonny del código de producto.
 - [ ] Convertir esos valores en datos iniciales opcionales del onboarding.
-- [ ] Añadir configuración de moneda de valoración por usuario/espacio.
+- [x] Añadir configuración de moneda de valoración por usuario/espacio.
 - [ ] Añadir invitaciones y revocación de miembros.
 - [ ] Diseñar límites de acceso por espacio, cuenta, wallet y custodia.
 - [ ] Añadir auditoría de cambios financieros.

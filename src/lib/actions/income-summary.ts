@@ -83,7 +83,7 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
     const rangeStart = `${shiftMonth(targetMonth, -2)}-01`;
     const rangeEnd = monthEnd(targetMonth);
 
-    const [sourcesResult, txResult, ratesResult] = await Promise.all([
+    const [sourcesResult, txResult, settingsResult, ratesResult] = await Promise.all([
       supabase
         .from('income_sources')
         .select('id, name, income_type, expected_amount_usd, frequency, pay_day_of_month')
@@ -94,6 +94,12 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
         .eq('type', 'income')
         .gte('transaction_date', rangeStart)
         .lt('transaction_date', rangeEnd),
+      supabase
+        .from('financial_settings')
+        .select('budget_base_rule')
+        .eq('user_id', authData.user.id)
+        .is('space_id', null)
+        .maybeSingle(),
       supabase
         .from('exchange_rates')
         .select('usd_bcv, eur_bcv')
@@ -195,6 +201,14 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
       .filter((source) => source.income_type === 'variable')
       .reduce((sum, source) => sum + (Number(source.expected_amount_usd) || 0) * (PERIODS_PER_MONTH[source.frequency] ?? 1), 0);
 
+    // Regla de base presupuestaria configurable en /dashboard/settings.
+    const budgetBaseRule = (settingsResult.data?.budget_base_rule as string | undefined) ?? 'average';
+    const budgetBase = budgetBaseRule === 'fixed_only'
+      ? current.expectedFixed
+      : budgetBaseRule === 'expected'
+        ? current.expectedFixed + expectedVariableEstimate
+        : current.expectedFixed + variableMonthlyAverage;
+
     return {
       success: true,
       summary: {
@@ -208,7 +222,7 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
         pendingFixedTotal: pendingSources.reduce((sum, stat) => sum + stat.pending, 0),
         stabilityRatio: receivedTotal > 0 ? current.fixed / receivedTotal : null,
         variableMonthlyAverage,
-        budgetBase: current.expectedFixed + variableMonthlyAverage,
+        budgetBase,
         surplusVariable: Math.max(current.variable - variableMonthlyAverage, 0),
         pendingSources,
         bySource: current.stats,

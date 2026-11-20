@@ -221,12 +221,35 @@
 
 - En Ingresos/Gastos, el dropdown de espacio filtra la lista; movimientos sin espacio (legacy) solo aparecen en "Todos los espacios"
 
+## Sesión 2026-11-18 (cont. 6) — Slice 8: financial_settings UI ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_04_settings_budget_rule.sql` — columna `financial_settings.budget_base_rule` (`fixed_only`/`expected`/`average`, default `average`).
+
+**Código:**
+- `src/lib/actions/financial-settings.ts` — nuevo: `getFinancialSettings` (fila global del usuario, defaults si no existe), `upsertFinancialSettings`
+- `src/app/dashboard/settings/page.tsx` + `FinancialSettingsForm` — nueva página (el sidebar ya enlazaba a ella): moneda de valoración USD/USDT, referencia cambiaria BCV USD / Binance USDT / BCV EUR / personalizada (con tasa), regla de base presupuestaria, zona horaria
+- `income-summary.ts` — `budgetBase` ahora respeta `budget_base_rule`: `fixed_only` = solo fijo esperado, `expected` = fijo + variable esperado, `average` = fijo + promedio móvil variable (comportamiento anterior)
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- Solo preferencias **globales del usuario** (space_id NULL); overrides por espacio quedan pendientes
+- La conversión de monedas en `income-summary` sigue provisional con BCV hasta que se use `valuation_rate_source` en reportes (Fase 5)
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_04_settings_budget_rule.sql` en SQL Editor
+- En `/dashboard/settings` cambiar la regla a "Solo fijo" → verificar que "Base sugerida" en la tarjeta de ingresos baja
+
 ## Próximos pasos (en orden sugerido)
 
-1. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
-2. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets`
-3. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
-4. **Metas de ahorro** — `savings_goals` + `savings_contributions`
+1. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets` (usa la `budgetBase` ya calculada)
+2. **Transferencias internas** — `internal_transfers` (Binance → BNC sin duplicar ingreso/gasto)
+3. **Metas de ahorro** — `savings_goals` + `savings_contributions`
+4. **`valuation_rate_source` en conversiones** — usar la referencia elegida en reportes
 
 ## Cómo retomar mañana
 
