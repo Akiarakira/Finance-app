@@ -48,6 +48,7 @@ interface IncomeTxRow {
   amount: number;
   currency: string;
   income_source_id: string | null;
+  custody_fund_id: string | null;
   transaction_date: string;
 }
 
@@ -89,7 +90,7 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
         .eq('is_active', true),
       supabase
         .from('transactions')
-        .select('amount, currency, income_source_id, transaction_date')
+        .select('amount, currency, income_source_id, custody_fund_id, transaction_date')
         .eq('type', 'income')
         .gte('transaction_date', rangeStart)
         .lt('transaction_date', rangeEnd),
@@ -124,6 +125,8 @@ export async function getIncomePeriodSummary(month?: string): Promise<{ success:
     const receivedByMonthSource = new Map<string, number>();
     const unlinkedByMonth = new Map<string, number>();
     for (const tx of movements) {
+      // Los depósitos a custodia no son ingreso del hogar.
+      if (tx.custody_fund_id) continue;
       const key = monthOf(tx.transaction_date);
       const usd = toUsd(Number(tx.amount) || 0, tx.currency);
       if (tx.income_source_id) {

@@ -34,6 +34,8 @@ export interface TransactionRecord {
   income_source_name: string | null;
   account_id: string | null;
   account_name: string | null;
+  custody_fund_id: string | null;
+  custody_fund_name: string | null;
 }
 
 export interface TransactionInput {
@@ -41,6 +43,7 @@ export interface TransactionInput {
   categoryId?: string | null;
   incomeSourceId?: string | null;
   accountId?: string | null;
+  custodyFundId?: string | null;
   type: TransactionType;
   amount: number;
   currency: Currency;
@@ -150,6 +153,18 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
       accountSpaceId = account.space_id;
     }
 
+    if (input.custodyFundId) {
+      const { data: fund, error: fundError } = await supabase
+        .from('custody_funds')
+        .select('id, space_id')
+        .eq('id', input.custodyFundId)
+        .maybeSingle();
+
+      if (fundError) return { success: false, error: fundError.message };
+      if (!fund) return { success: false, error: 'El fondo de custodia seleccionado no existe o no tienes acceso.' };
+      if (!accountSpaceId) accountSpaceId = fund.space_id;
+    }
+
     const { data, error } = await supabase
       .from('transactions')
       .insert({
@@ -159,6 +174,7 @@ export async function createTransaction(input: TransactionInput): Promise<{ succ
         income_source_id: input.type === 'income' ? input.incomeSourceId || null : null,
         account_id: input.accountId || null,
         space_id: accountSpaceId,
+        custody_fund_id: input.custodyFundId || null,
         type: input.type,
         amount: input.amount,
         currency: input.currency,
@@ -186,7 +202,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
     const supabase = await createClient();
     let query = supabase
       .from('transactions')
-      .select('id, wallet_id, created_by, tag_id, income_source_id, account_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name), account:accounts(name)')
+      .select('id, wallet_id, created_by, tag_id, income_source_id, account_id, custody_fund_id, type, amount, currency, payment_method, description, transaction_date, tag:tags(name), income_source:income_sources(name), account:accounts(name), custody_fund:custody_funds(beneficiary_name)')
       .order('transaction_date', { ascending: false })
       .limit(50);
 
@@ -204,6 +220,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
       const tag = Array.isArray(item.tag) ? item.tag[0] : item.tag;
       const incomeSource = Array.isArray(item.income_source) ? item.income_source[0] : item.income_source;
       const account = Array.isArray(item.account) ? item.account[0] : item.account;
+      const custodyFund = Array.isArray(item.custody_fund) ? item.custody_fund[0] : item.custody_fund;
       const creator = creatorsMap.get(item.created_by);
       return {
         ...item,
@@ -211,6 +228,7 @@ export async function listTransactions(type?: TransactionType): Promise<{ succes
         category_name: tag?.name ?? null,
         income_source_name: incomeSource?.name ?? null,
         account_name: account?.name ?? null,
+        custody_fund_name: custodyFund?.beneficiary_name ?? null,
         created_by_name: creator?.full_name || creator?.username || null,
         created_by_email: creator?.email ?? null,
       } as TransactionRecord;
@@ -245,7 +263,7 @@ export async function getMonthlySummary(month: string): Promise<{
 
     const { data, error } = await supabase
       .from('transactions')
-      .select('type, amount, payment_method, tag:tags(name)')
+      .select('type, amount, payment_method, custody_fund_id, tag:tags(name)')
       .gte('transaction_date', start)
       .lt('transaction_date', end);
 
@@ -257,6 +275,8 @@ export async function getMonthlySummary(month: string): Promise<{
     const paymentTotals = new Map<string, number>();
 
     for (const item of data ?? []) {
+      // Los movimientos de custodia no son ingreso ni gasto del hogar.
+      if (item.custody_fund_id) continue;
       const amount = Number(item.amount) || 0;
       if (item.type === 'income') income += amount;
       if (item.type === 'expense') expenses += amount;

@@ -4,6 +4,7 @@ import { listAccessibleWallets, listCategories, listTransactions, type Transacti
 import { listIncomeSources } from '@/lib/actions/income-sources';
 import { getIncomePeriodSummary, type SourcePeriodStat } from '@/lib/actions/income-summary';
 import { listAccounts } from '@/lib/actions/accounts';
+import { listCustodyFunds } from '@/lib/actions/custody-funds';
 
 const paymentLabels: Record<string, string> = {
   binance: 'Binance / Pay',
@@ -14,17 +15,19 @@ const paymentLabels: Record<string, string> = {
 
 export default async function TransactionPage({ type, initialWalletId }: { type: TransactionType; initialWalletId?: string }) {
   const isIncome = type === 'income';
-  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult, incomeSummaryResult] = await Promise.all([
+  const [walletsResult, categoriesResult, transactionsResult, incomeSourcesResult, accountsResult, incomeSummaryResult, custodyFundsResult] = await Promise.all([
     listAccessibleWallets(),
     listCategories(),
     listTransactions(type),
     isIncome ? listIncomeSources(true) : Promise.resolve({ success: true as const, sources: [] }),
     listAccounts(),
     isIncome ? getIncomePeriodSummary() : Promise.resolve({ success: true as const, summary: undefined }),
+    listCustodyFunds(),
   ]);
   const transactions = transactionsResult.transactions ?? [];
   const incomeSources = incomeSourcesResult.sources ?? [];
   const accounts = accountsResult.accounts ?? [];
+  const custodyFunds = custodyFundsResult.funds ?? [];
   const statsBySource = Object.fromEntries(
     (incomeSummaryResult.summary?.bySource ?? []).map((stat) => [stat.sourceId, stat]),
   ) as Record<string, SourcePeriodStat>;
@@ -50,6 +53,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
         categories={categoriesResult.categories ?? []}
         incomeSources={incomeSources.filter((source) => source.is_active)}
         accounts={accounts}
+        custodyFunds={custodyFunds}
         initialWalletId={initialWalletId}
       />
 
@@ -67,6 +71,7 @@ export default async function TransactionPage({ type, initialWalletId }: { type:
                     {transaction.category_name ?? 'Sin categoría'} · {paymentLabels[transaction.payment_method] ?? transaction.payment_method} · {transaction.transaction_date}
                     {transaction.income_source_name && ` · Fuente: ${transaction.income_source_name}`}
                     {transaction.account_name && ` · Cuenta: ${transaction.account_name}`}
+                    {transaction.custody_fund_name && ` · Custodia: ${transaction.custody_fund_name}`}
                   </p>
                   <p className="text-xs text-slate-400">
                     Registrado por: {transaction.created_by_name ?? transaction.created_by_email ?? transaction.created_by}

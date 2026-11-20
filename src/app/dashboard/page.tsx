@@ -4,17 +4,35 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase';
 import { getMonthlySummary, listTransactions } from '@/lib/actions/transactions';
 import { getIncomePeriodSummary } from '@/lib/actions/income-summary';
+import { listCustodyFunds } from '@/lib/actions/custody-funds';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [summaryResult, transactionsResult, incomeResult] = await Promise.all([
+  const [summaryResult, transactionsResult, incomeResult, fundsResult] = await Promise.all([
     getMonthlySummary(currentMonth),
     listTransactions(),
     getIncomePeriodSummary(currentMonth),
+    listCustodyFunds(),
   ]);
 
   const incomeSummary = incomeResult.summary;
+  const custodyFunds = fundsResult.funds ?? [];
+
+  const custodyMovements = custodyFunds.length > 0
+    ? await supabase
+        .from('transactions')
+        .select('custody_fund_id, type, amount')
+        .in('custody_fund_id', custodyFunds.map((fund) => fund.id))
+    : { data: [] };
+
+  const custodyTotals = new Map<string, number>(custodyFunds.map((fund) => [fund.id, fund.current_balance_usd]));
+  for (const movement of custodyMovements.data ?? []) {
+    if (!movement.custody_fund_id) continue;
+    const amount = Number(movement.amount) || 0;
+    const current = custodyTotals.get(movement.custody_fund_id) ?? 0;
+    custodyTotals.set(movement.custody_fund_id, movement.type === 'income' ? current + amount : current - amount);
+  }
 
   // Traemos la última tasa de BCV
   const { data: rates } = await supabase
@@ -154,6 +172,24 @@ export default async function DashboardPage() {
               ${incomeSummary.unlinkedReceived.toFixed(2)} recibidos sin fuente asignada.
             </p>
           )}
+        </div>
+      )}
+
+      {custodyFunds.length > 0 && (
+        <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="font-bold text-slate-800">Fondos de custodia</h3>
+            <Link href="/dashboard/accounts" className="text-sm font-medium text-blue-600 hover:underline">Administrar</Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {custodyFunds.map((fund) => (
+              <div key={fund.id} className="rounded-lg border border-purple-100 bg-purple-50/50 p-4">
+                <p className="text-sm text-slate-500">{fund.beneficiary_name}</p>
+                <p className="text-xl font-bold text-slate-800">${(custodyTotals.get(fund.id) ?? fund.current_balance_usd).toFixed(2)}</p>
+                <p className="text-xs text-slate-400">Disponible · {fund.space_name ?? 'Sin espacio'}</p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

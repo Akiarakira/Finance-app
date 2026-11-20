@@ -140,13 +140,45 @@
 - Crear espacio "Hogar", invitar al otro usuario por email/username y confirmar que ve el espacio y sus cuentas
 - Confirmar que un `viewer` no puede crear cuentas ni invitar (RLS editor+)
 
+## Sesión 2026-11-18 (cont. 3) — Slice 5: Custodia (Fondo Mami) ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_02_custody_funds.sql` — tabla `custody_funds` (espacio requerido, beneficiario, saldo inicial, notas), RLS por membresía del espacio (mismo patrón que accounts), `transactions.custody_fund_id` + índice.
+
+**Código:**
+- `src/lib/actions/custody-funds.ts` — nuevo: list/create/update/delete (delete con guardia de movimientos); join del nombre del espacio
+- `transactions.ts` — `custodyFundId` en input (valida fondo, hereda su `space_id` si no hay cuenta), `custody_fund_name` en listado, `getMonthlySummary` excluye movimientos de custodia
+- `income-summary.ts` — depósitos a custodia excluidos del resumen de ingresos
+- `src/components/CustodyFundsManager.tsx` — nuevo: crear (espacio, beneficiario, saldo inicial, notas), editar, eliminar; saldo = inicial + depósitos − compras
+- `/dashboard/accounts` — sección "Fondos de custodia" con saldos calculados
+- `TransactionForm` — selector "Fondo de custodia" para ingreso (depósito) y gasto (compra), con aviso de que no cuenta para el hogar
+- `TransactionPage` — "Custodia: X" en movimientos
+- Dashboard — tarjeta "Fondos de custodia" con saldo por fondo
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- Saldo del fondo = `current_balance_usd` (inicial) + ingresos vinculados − gastos vinculados (mismo patrón computado que cuentas/wallets)
+- La cuenta de salida (si se elige) también descuenta su saldo — la compra "descuenta custodia y cuenta de salida" como pide el plan
+- Un movimiento de custodia puede llevar `account_id`; el `space_id` es el de la cuenta si existe, si no el del fondo
+- NO se impide compra > saldo disponible (queda como pendiente del plan con confirmación explícita)
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_02_custody_funds.sql` en SQL Editor
+- Crear espacio tipo `custody` "Custodia Mami" → crear fondo "Mami"
+- Registrar un ingreso con "Depósito a Mami" → verificar que NO suma a ingresos del hogar pero SÍ sube el saldo del fondo
+- Registrar gasto "Compra para Mami" con cuenta de salida → verifica que baja cuenta y fondo, y no aparece en gastos del resumen mensual
+- Invitar a Mami como admin del espacio custodia → ella administra sin ver cuentas personales
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Custodia Mami** — `custody_funds` + exclusión de reportes del hogar (ya tiene espacio tipo `custody`)
-2. **Deudas externas** — `liabilities` + `liability_payments`
-3. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
-4. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
-5. **Indicador compartido/privado** en movimientos (plan Fase 4)
+1. **Deudas externas** — `liabilities` + `liability_payments`
+2. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
+3. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
+4. **Indicador compartido/privado** en movimientos (plan Fase 4)
 
 ## Cómo retomar mañana
 

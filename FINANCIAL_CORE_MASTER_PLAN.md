@@ -637,9 +637,9 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Manejo de custodia
 
-- [ ] Si `custody_fund_id` está presente, descontar del balance del fondo.
-- [ ] Excluir el movimiento de reportes de gastos del hogar.
-- [ ] Registrar beneficiario y motivo de la operación.
+- [x] Si `custody_fund_id` está presente, descontar del balance del fondo.
+- [x] Excluir el movimiento de reportes de gastos del hogar.
+- [x] Registrar beneficiario y motivo de la operación.
 - [ ] Impedir que una compra supere el saldo disponible sin confirmación explícita.
 
 ### Manejo de deudas
@@ -755,7 +755,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 - [ ] Mostrar referencia cambiaria activa del usuario/espacio.
 - [ ] Barras de progreso de Necesidades, Deseos y Ahorros.
-- [ ] Tarjeta independiente `Fondo Mami`.
+- [x] Tarjeta independiente `Fondo Mami`.
 - [ ] Tarjetas para todas las deudas activas.
 - [ ] Alerta de próxima quincena/vencimiento.
 - [ ] Saldos consolidados por cuenta en USD.
@@ -801,7 +801,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 ## Fase 5 — Reportes y control financiero
 
 - [ ] Reemplazar sumas de monedas crudas por agregaciones de `amount_usd`.
-- [ ] Excluir custodia de reportes del hogar.
+- [x] Excluir custodia de reportes del hogar.
 - [ ] Separar pagos de deuda de gasto ordinario.
 - [ ] Reporte por cuenta.
 - [ ] Reporte por espacio financiero.
@@ -882,8 +882,8 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] El usuario ve el ingreso fijo esperado aún no cobrado en el periodo.
 - [ ] El excedente variable se reporta aparte y no se compromete automáticamente.
 - [ ] Un gasto de hogar afecta presupuesto y cuenta financiera.
-- [ ] Un depósito de Mami no afecta ingresos ni presupuesto del hogar.
-- [ ] Una compra de Mami descuenta custodia y cuenta de salida.
+- [x] Un depósito de Mami no afecta ingresos ni presupuesto del hogar.
+- [x] Una compra de Mami descuenta custodia y cuenta de salida.
 - [ ] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.
 - [ ] Una deuda saldada deja de aparecer como obligación activa.
 - [ ] Una meta de ahorro muestra monto faltante, progreso y aporte sugerido.
@@ -891,7 +891,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Los balances consolidados no suman monedas sin convertir.
 - [ ] Una cuenta puede archivarse sin destruir su historial.
 - [ ] Una wallet compartida permite colaboración sin exponer cuentas personales.
-- [ ] Un espacio de custodia puede ser administrado por el beneficiario autorizado.
+- [x] Un espacio de custodia puede ser administrado por el beneficiario autorizado.
 - [ ] Cada movimiento muestra quién lo registró.
 - [ ] Cada movimiento conserva la tasa usada.
 - [ ] Un usuario sin membresía no puede leer ni modificar cuentas/movimientos.

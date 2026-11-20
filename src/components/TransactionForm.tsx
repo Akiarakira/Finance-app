@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createTransaction, type CategoryOption, type Currency, type PaymentMethod, type TransactionType, type WalletOption } from '@/lib/actions/transactions';
 import type { IncomeSource } from '@/lib/actions/income-sources';
 import type { Account } from '@/lib/actions/accounts';
+import type { CustodyFund } from '@/lib/actions/custody-funds';
 
 interface TransactionFormProps {
   type: TransactionType;
@@ -12,6 +13,7 @@ interface TransactionFormProps {
   categories: CategoryOption[];
   incomeSources?: IncomeSource[];
   accounts?: Account[];
+  custodyFunds?: CustodyFund[];
   initialWalletId?: string;
 }
 
@@ -21,7 +23,7 @@ const incomeTypeLabels: Record<IncomeSource['income_type'], string> = {
   mixed: 'Mixto',
 };
 
-export default function TransactionForm({ type, wallets, categories, incomeSources = [], accounts = [], initialWalletId }: TransactionFormProps) {
+export default function TransactionForm({ type, wallets, categories, incomeSources = [], accounts = [], custodyFunds = [], initialWalletId }: TransactionFormProps) {
   const selectedWalletId = initialWalletId && wallets.some((wallet) => wallet.id === initialWalletId)
     ? initialWalletId
     : wallets[0]?.id ?? '';
@@ -29,6 +31,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
   const [categoryId, setCategoryId] = useState('');
   const [incomeSourceId, setIncomeSourceId] = useState('');
   const [accountId, setAccountId] = useState('');
+  const [custodyFundId, setCustodyFundId] = useState('');
   const [amount, setAmount] = useState('');
   const [currency, setCurrency] = useState<Currency>('USD');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('other');
@@ -51,6 +54,7 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
         categoryId: categoryId || null,
         incomeSourceId: incomeSourceId || null,
         accountId: accountId || null,
+        custodyFundId: custodyFundId || null,
         type,
         amount: Number(amount),
         currency,
@@ -116,6 +120,24 @@ export default function TransactionForm({ type, wallets, categories, incomeSourc
                 </option>
               ))}
             </select>
+          </label>
+        )}
+        {custodyFunds.length > 0 && (
+          <label className="text-sm font-medium text-slate-700">
+            Fondo de custodia
+            <select value={custodyFundId} onChange={(event) => setCustodyFundId(event.target.value)} className="mt-1 w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 font-normal text-slate-800">
+              <option value="">{isIncome ? 'Ingreso del hogar' : 'Gasto del hogar'}</option>
+              {custodyFunds.map((fund) => (
+                <option key={fund.id} value={fund.id}>
+                  {isIncome ? `Depósito a ${fund.beneficiary_name}` : `Compra para ${fund.beneficiary_name}`}
+                </option>
+              ))}
+            </select>
+            {custodyFundId && (
+              <span className="mt-1 block text-xs font-normal text-slate-400">
+                No cuenta como {isIncome ? 'ingreso' : 'gasto'} del hogar.
+              </span>
+            )}
           </label>
         )}
         {isIncome && (
