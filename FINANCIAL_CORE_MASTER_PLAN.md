@@ -558,7 +558,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [x] Crear `financial_spaces` y `financial_space_members` para separar espacios personales, hogar y custodia.
 - [x] Crear `financial_settings` para guardar la moneda de valoración y referencia cambiaria por usuario/espacio.
 - [ ] Crear `savings_goals` y `savings_contributions`.
-- [ ] Crear `liability_payments` para el historial de pagos de cada deuda.
+- [x] Crear `liability_payments` para el historial de pagos de cada deuda.
 - [x] Crear `income_sources` y `income_type_enum` para clasificar ingresos fijos, variables y mixtos.
 - [x] Agregar `income_source_id` a `transactions`.
 - [ ] Actualizar `src/types/database.ts` con tipos generados o interfaces para:
@@ -644,16 +644,16 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 
 ### Manejo de deudas
 
-- [ ] Si `liability_id` está presente, descontar `liabilities.current_balance_usd`.
-- [ ] Crear historial de pagos de deuda.
-- [ ] Crear acción para registrar pagos parciales o cuotas.
+- [x] Si `liability_id` está presente, descontar `liabilities.current_balance_usd`.
+- [x] Crear historial de pagos de deuda.
+- [x] Crear acción para registrar pagos parciales o cuotas.
 - [ ] Calcular porcentaje pagado, saldo restante y cuotas restantes.
 - [ ] Calcular dinero faltante para cubrir la próxima cuota.
 - [ ] Calcular cuota sugerida mensual/quincenal para una fecha objetivo.
 - [ ] Crear estadísticas de pago y proyección de liquidación.
-- [ ] Impedir pagos mayores al saldo salvo que sean sobrepagos explícitos.
-- [ ] Marcar la deuda como liquidada al llegar a cero.
-- [ ] Mostrar cuota, vencimiento y saldo restante.
+- [x] Impedir pagos mayores al saldo salvo que sean sobrepagos explícitos.
+- [x] Marcar la deuda como liquidada al llegar a cero.
+- [x] Mostrar cuota, vencimiento y saldo restante.
 
 ### Transferencias internas
 
@@ -756,7 +756,7 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Mostrar referencia cambiaria activa del usuario/espacio.
 - [ ] Barras de progreso de Necesidades, Deseos y Ahorros.
 - [x] Tarjeta independiente `Fondo Mami`.
-- [ ] Tarjetas para todas las deudas activas.
+- [x] Tarjetas para todas las deudas activas.
 - [ ] Alerta de próxima quincena/vencimiento.
 - [ ] Saldos consolidados por cuenta en USD.
 - [ ] Saldos consolidados en la moneda de valoración seleccionada.
@@ -884,8 +884,8 @@ Estas cuentas son valores iniciales para la configuración actual, no cuentas ob
 - [ ] Un gasto de hogar afecta presupuesto y cuenta financiera.
 - [x] Un depósito de Mami no afecta ingresos ni presupuesto del hogar.
 - [x] Una compra de Mami descuenta custodia y cuenta de salida.
-- [ ] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.
-- [ ] Una deuda saldada deja de aparecer como obligación activa.
+- [x] Un pago a cualquier deuda descuenta la deuda y la cuenta de salida.
+- [x] Una deuda saldada deja de aparecer como obligación activa.
 - [ ] Una meta de ahorro muestra monto faltante, progreso y aporte sugerido.
 - [ ] Una transferencia Binance → BNC no aparece como ingreso ni gasto.
 - [ ] Los balances consolidados no suman monedas sin convertir.

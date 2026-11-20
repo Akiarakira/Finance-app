@@ -5,19 +5,22 @@ import { createClient } from '@/lib/supabase';
 import { getMonthlySummary, listTransactions } from '@/lib/actions/transactions';
 import { getIncomePeriodSummary } from '@/lib/actions/income-summary';
 import { listCustodyFunds } from '@/lib/actions/custody-funds';
+import { listLiabilities } from '@/lib/actions/liabilities';
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const currentMonth = new Date().toISOString().slice(0, 7);
-  const [summaryResult, transactionsResult, incomeResult, fundsResult] = await Promise.all([
+  const [summaryResult, transactionsResult, incomeResult, fundsResult, liabilitiesResult] = await Promise.all([
     getMonthlySummary(currentMonth),
     listTransactions(),
     getIncomePeriodSummary(currentMonth),
     listCustodyFunds(),
+    listLiabilities(),
   ]);
 
   const incomeSummary = incomeResult.summary;
   const custodyFunds = fundsResult.funds ?? [];
+  const liabilities = liabilitiesResult.liabilities ?? [];
 
   const custodyMovements = custodyFunds.length > 0
     ? await supabase
@@ -189,6 +192,32 @@ export default async function DashboardPage() {
                 <p className="text-xs text-slate-400">Disponible · {fund.space_name ?? 'Sin espacio'}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {liabilities.length > 0 && (
+        <div className="rounded-xl border border-slate-100 bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <h3 className="font-bold text-slate-800">Deudas activas</h3>
+            <Link href="/dashboard/debts" className="text-sm font-medium text-blue-600 hover:underline">Administrar</Link>
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {liabilities.map((liability) => {
+              const paidPct = liability.total_initial_amount_usd > 0
+                ? Math.min(100, ((liability.total_initial_amount_usd - liability.current_balance_usd) / liability.total_initial_amount_usd) * 100)
+                : 0;
+              return (
+                <div key={liability.id} className="rounded-lg border border-red-100 bg-red-50/50 p-4">
+                  <p className="text-sm text-slate-500">{liability.creditor_name}</p>
+                  <p className="text-xl font-bold text-slate-800">${liability.current_balance_usd.toFixed(2)}</p>
+                  <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
+                    <div className="h-full rounded-full bg-emerald-500" style={{ width: `${paidPct}%` }} />
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">{paidPct.toFixed(0)}% pagado{liability.due_day_of_month ? ` · vence día ${liability.due_day_of_month}` : ''}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

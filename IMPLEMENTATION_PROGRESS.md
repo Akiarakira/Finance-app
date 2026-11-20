@@ -173,12 +173,38 @@
 - Registrar gasto "Compra para Mami" con cuenta de salida → verifica que baja cuenta y fondo, y no aparece en gastos del resumen mensual
 - Invitar a Mami como admin del espacio custodia → ella administra sin ver cuentas personales
 
+## Sesión 2026-11-18 (cont. 4) — Slice 6: Deudas externas ✅
+
+### Qué se hizo
+
+**DB (pendiente ejecutar):** `supabase/migrations/20261118_03_liabilities.sql` — tablas `liabilities` (espacio requerido, acreedor, monto total, cuota+frecuencia, día de vencimiento, prioridad, `is_settled`/`settled_at`) y `liability_payments` (deuda, cuenta opcional, transaction_id, monto, fecha), `transactions.liability_id`, RLS por membresía del espacio.
+
+**Código:**
+- `src/lib/actions/liabilities.ts` — nuevo: list/create/update/delete (guardia de pagos), `recordLiabilityPayment` (crea movimiento expense con `liability_id` + `account_id` opcional, inserta pago, descuenta `current_balance_usd`, marca `is_settled` al llegar a cero, rechaza pago > saldo), `listLiabilityPayments`
+- `src/app/dashboard/debts/page.tsx` + `DebtsManager` — crear, editar, barra de progreso, "Pagar" (wallet de salida requerida + cuenta opcional + monto sugerido = cuota o saldo), historial lazy, eliminar
+- Sidebar — entrada "Deudas"
+- Dashboard — tarjeta "Deudas activas" con saldo restante + % pagado
+
+**Verificado:** `npx tsc --noEmit` ✅ · `npm run lint` ✅
+
+### Decisiones tomadas
+
+- El pago requiere **wallet de salida** (transactions.wallet_id es NOT NULL y la RLS es por wallet); `account_id` es vinculación opcional para descontar también la cuenta
+- Los pagos de deuda cuentan como `expense` en el resumen mensual (la separación "deuda vs. gasto ordinario" queda para Fase 5, el `liability_id` ya lo permite)
+- No hay confirmación de sobrepago: el servidor rechaza pago > saldo directamente
+
+### Pendiente de verificación manual (usuaria)
+
+- Ejecutar `supabase/migrations/20261118_03_liabilities.sql` en SQL Editor
+- Crear deuda en `/dashboard/debts` → registrar pago → verificar que descuenta saldo, aparece en gastos y en historial
+- Pagar hasta agotar → verificar badge "Saldada" y que desaparece del dashboard
+
 ## Próximos pasos (en orden sugerido)
 
-1. **Deudas externas** — `liabilities` + `liability_payments`
-2. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
-3. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
-4. **Indicador compartido/privado** en movimientos (plan Fase 4)
+1. **Selector de espacio** en dashboard/transacciones + definir relación wallets↔espacios/cuentas
+2. **`financial_settings` UI** — moneda de valoración + referencia cambiaria + regla de base presupuestaria
+3. **Indicador compartido/privado** en movimientos (plan Fase 4)
+4. **Presupuesto 50-30-20** — `budget_categories` + `monthly_budgets`
 
 ## Cómo retomar mañana
 
